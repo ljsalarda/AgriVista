@@ -1,83 +1,19 @@
+<script setup>
+import DashboardLayout from '@/components/DashboardLayout.vue';
+import { ref } from 'vue';
+
+const tab = ref('purchased');
+</script>
+
 <template>
-    <v-container fluid>
-      <v-row>
-        <v-col
-            cols="12"
-            md="3"
-            class="d-flex flex-column justify-space-between"
-            style="background-color: #f6fdf8; height: 100vh; padding: 32px ;"
-          >
+  <DashboardLayout>
+    <v-row>
+      <v-col cols="12" class="px-6 pt-2"> 
 
-            <div>
-     
-              <v-img src="/images/AgriVistaLogo.png" contain height="50" class="mb-10" />
 
-              <v-btn
-              block
-                height="50"
-                class="mb-6 text-grey-darken-2"
-                variant="text"
-                prepend-icon="mdi-sprout"
-                to="/list-farm"
-                style="justify-content: flex-start; padding-left: 20px;"
-              >
-              My Farm
-              </v-btn>
+        <h2 class="font-weight-bold text-h4 mb-2">Puchases & Bookings</h2>
 
-              <v-btn
-              block
-                height="50"
-                class="mb-6 text-white font-weight-bold"
-                color="green"
-                rounded
-                prepend-icon="mdi-email-outline"
-                to="/PuchasesBooks"
-                style="justify-content: flex-start; padding-left: 10px;"
-              >
-                PuchasesBooks
-              </v-btn>
-
-              <v-btn
-                block
-                height="50"
-                class="mb-6 text-grey-darken-2"
-                variant="text"
-                prepend-icon="mdi-basket-outline"
-                to="/list-products"
-                style="justify-content: flex-start; padding-left: 20px;"
-              >
-                List Products
-              </v-btn>
-
-              <v-btn
-                block
-                height="50"
-                class="mb-6 text-grey-darken-2"
-                variant="text"
-                prepend-icon="mdi-account-outline"
-                to="/farmeraccount"
-                style="justify-content: flex-start; padding-left: 20px;"
-              >
-                Account
-              </v-btn>
-            </div>
-
-        
-          </v-col>
-  
-        <v-col cols="12" md="9" class="pa-6">
-          <div class="d-flex justify-space-between align-center py-4">
-              <h2 class="font-weight-bold">Hello, Farmer</h2>
-              <div class="d-flex align-center">
-                <v-text-field prepend-inner-icon="mdi-magnify" placeholder="Search" hide-details dense rounded variant="outlined" style="max-width: 250px;"></v-text-field>
-                <v-btn icon><v-icon>mdi-bell</v-icon></v-btn>
-                <v-btn icon><v-icon>mdi-cog</v-icon></v-btn>
-              </div>
-            </div>
-  
-          <h2 class="font-weight-bold text-h4 mb-2">Puchases & Bookings</h2>
-
-          <v-card>
+        <v-card>
           <v-tabs v-model="tab" align-tabs="start" color="green">
             <v-tab value="purchased">Purchased Products</v-tab>
             <v-tab value="bookings">Farm Bookings</v-tab>
@@ -97,6 +33,14 @@
                     </tr>
                   </thead>
                   <tbody>
+                    <!-- Example Row -->
+                    <!-- <tr>
+                      <td>Tomatoes</td>
+                      <td>10kg</td>
+                      <td>Juan Dela Cruz</td>
+                      <td>2025-04-22</td>
+                      <td>Delivered</td>
+                    </tr> -->
                   </tbody>
                 </v-table>
                 <v-btn color="green" class="mt-4 text-white">
@@ -115,6 +59,13 @@
                     </tr>
                   </thead>
                   <tbody>
+                    <!-- Example Row -->
+                    <!-- <tr>
+                      <td>Ana Santos</td>
+                      <td>2025-04-25</td>
+                      <td>Farm Tour</td>
+                      <td>4</td>
+                    </tr> -->
                   </tbody>
                 </v-table>
                 <v-btn color="green" class="mt-4 text-white">
@@ -124,27 +75,13 @@
             </v-tabs-window>
           </v-card-text>
         </v-card>
+      </v-col>
+    </v-row>
+  </DashboardLayout>
+</template>
 
-
-  
-        
-        </v-col>
-      </v-row>
-    </v-container>
-  </template>
-
-<script>
-  export default {
-    data: () => ({
-      tab: 'purchased',
-    }),
-  }
-</script>
-  
-  <style scoped>
-  .gap-4 {
-    gap: 1rem;
-  }
-  </style>
-  
-  
+<style scoped>
+.gap-4 {
+  gap: 1rem;
+}
+</style>
