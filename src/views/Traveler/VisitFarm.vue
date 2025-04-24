@@ -63,28 +63,6 @@
               </v-btn>
             </div>
 
-            <div>
-              <div class="d-flex align-center mb-4">
-                <v-avatar size="48" class="me-3">
-                  <img src="" alt="Profile" />
-                </v-avatar>
-                <div>
-                  <div class="font-weight-bold text-black">Hanz Oraiz</div>
-                  <div class="text-caption">Traveller</div>
-                </div>
-              </div>
-
-              <v-btn
-                block
-                variant="text"
-                class="text-left text-grey-darken-2"
-                prepend-icon="mdi-logout"
-                to="/login"
-                style="justify-content: flex-start; padding-left: 20px;"
-              >
-                Log Out
-              </v-btn>
-            </div>
           </v-col>
 
   

@@ -63,28 +63,7 @@
               </v-btn>
             </div>
 
-            <div>
-              <div class="d-flex align-center mb-4">
-                <v-avatar size="48" class="me-3">
-                  <img src="" alt="Profile" />
-                </v-avatar>
-                <div>
-                  <div class="font-weight-bold text-black">Hanz Oraiz</div>
-                  <div class="text-caption">Traveller</div>
-                </div>
-              </div>
-
-              <v-btn
-                block
-                variant="text"
-                class="text-left text-grey-darken-2"
-                prepend-icon="mdi-logout"
-                to="/login"
-                style="justify-content: flex-start; padding-left: 20px;"
-              >
-                Log Out
-              </v-btn>
-            </div>
+           
           </v-col>
 
   
@@ -93,15 +72,6 @@
           <div class="d-flex justify-space-between align-center py-4">
             <h2 class="font-weight-bold">Hello, Hanz</h2>
             <div class="d-flex align-center">
-              <v-text-field
-                prepend-inner-icon="mdi-magnify"
-                placeholder="Search"
-                hide-details
-                dense
-                rounded
-                variant="outlined"
-                style="max-width: 250px;"
-              ></v-text-field>
               <v-btn icon><v-icon>mdi-bell</v-icon></v-btn>
               <v-btn icon><v-icon>mdi-cog</v-icon></v-btn>
             </div>
