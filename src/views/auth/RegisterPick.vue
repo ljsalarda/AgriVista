@@ -41,7 +41,7 @@ const roles = [
   
   <style scoped>
   .bg-container {
-    background: url('/src/assets/bgg.jpg') no-repeat center center;
+    background: url('/src/assets/bg2.jpg') no-repeat center center;
     background-size: cover;
     min-height: 100vh; 
     display: flex;

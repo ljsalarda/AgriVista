@@ -1,11 +1,12 @@
 <script setup>
-import { ref } from 'vue';
+import { ref } from 'vue'
+import { requiredValidator, emailValidator, passwordValidator } from '@/utils/validators'
 </script>
 
 <template>
   <v-app>
     <v-container fluid class="bg-container">
-      <v-row justify="center" align="center" style="min-height: 100vh;">
+      <v-row justify="center" align="center" style="min-height: 100vh">
         <v-col cols="12" sm="8" md="6" lg="4">
           <v-card class="elevation-12 login-card">
             <v-card-title class="text-center pt-6">
@@ -22,11 +23,25 @@ import { ref } from 'vue';
               <v-divider></v-divider>
               <p class="text-center my-4">or</p>
               <v-form @submit.prevent>
-                <v-text-field label="Email" variant="outlined" density="comfortable"></v-text-field>
-                <v-text-field label="Password" type="password" variant="outlined" density="comfortable"></v-text-field>
+                <v-text-field
+                  label="Email"
+                  variant="outlined"
+                  density="comfortable"
+                  :rules="[requiredValidator, emailValidator]"
+                ></v-text-field>
+                <v-text-field
+                  label="Password"
+                  type="password"
+                  variant="outlined"
+                  density="comfortable"
+                  :rules="[requiredValidator, passwordValidator]"
+                ></v-text-field>
                 <v-btn type="submit" block class="login-btn" color="success">Log In</v-btn>
               </v-form>
-              <p class="text-center mt-4">Don't have an account? <RouterLink to="/register-pick" class="register-link">Register</RouterLink></p>
+              <p class="text-center mt-4">
+                Don't have an account?
+                <RouterLink to="/register-pick" class="register-link">Register</RouterLink>
+              </p>
             </v-card-text>
           </v-card>
         </v-col>
@@ -37,7 +52,7 @@ import { ref } from 'vue';
 
 <style scoped>
 .bg-container {
-  background: url('@/assets/bgg.jpg') no-repeat center center;
+  background: url('@/assets/bg2.jpg') no-repeat center center;
   background-size: cover;
   min-height: 100vh;
   display: flex;
