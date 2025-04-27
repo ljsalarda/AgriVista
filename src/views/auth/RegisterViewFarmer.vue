@@ -1,3 +1,7 @@
+<script setup>
+import { requiredValidator, emailValidator, passwordValidator } from '@/utils/validators'
+</script>
+
 <template>
     <v-app>
       <v-container fluid class="bg-container d-flex align-center justify-center">
@@ -22,12 +26,30 @@
   
                   
                   <v-form fast-fail @submit.prevent>
-                    <v-text-field label="Full name" variant="outlined" density="compact" class="mb-2"></v-text-field>
-                    <v-text-field label="Email" variant="outlined" density="compact" class="mb-2"></v-text-field>
-                    <v-text-field label="Password" type="password" variant="outlined" density="compact"></v-text-field>
-  
-                    <v-btn class="mt-3" type="submit" block color="success">Start</v-btn>
-                  </v-form>
+                  <v-text-field
+                    label="Full name"
+                    variant="outlined"
+                    density="compact"
+                    class="mb-2"
+                    :rules="[requiredValidator]"
+                  ></v-text-field>
+                  <v-text-field
+                    label="Email"
+                    variant="outlined"
+                    density="compact"
+                    class="mb-2"
+                    :rules="[requiredValidator, emailValidator]"
+                  ></v-text-field>
+                  <v-text-field
+                    label="Password"
+                    type="password"
+                    variant="outlined"
+                    density="compact"
+                    :rules="[requiredValidator, passwordValidator]"
+                  ></v-text-field>
+
+                  <v-btn class="mt-3" type="submit" block color="success">Start</v-btn>
+                </v-form>
   
                   <p class="text-caption mt-3">
                     Already have an account? <RouterLink to="/login" class="text-green-darken-2">Log in</RouterLink>
