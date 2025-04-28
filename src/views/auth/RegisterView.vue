@@ -34,7 +34,7 @@ const registerTraveler = async () => {
   } else {
     form.value.formSuccessMessage = 'Registration successful! Please verify your email.'
     setTimeout(() => {
-      router.push('/login')
+      router.replace('/discoverfarm')
     }, 2000)
   }
 

@@ -34,7 +34,7 @@ const registerFarmer = async () => {
     form.value.formStatus = 200
     form.value.formSuccessMessage = 'Registration successful! Please check your email to verify your account.'
     form.value.formProcess = false
-    router.push('/login')
+    router.replace('/list-farm')
   }
 }
 </script>
