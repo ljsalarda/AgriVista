@@ -83,7 +83,7 @@ const drawerOpen = ref(false)
           <v-main class="pa-0 mt-0 mt-md-0 mt-10">
             <v-container fluid>
                 <div class="d-flex justify-space-between align-center py-4">
-                    <h2 class="font-weight-bold">Hello, Farmer</h2>
+                    <h2 class="font-weight-bold">Hello, Traveler</h2>
 
                     <div class="d-flex align-center">
                         <v-menu offset-y transition="scale-transition">
