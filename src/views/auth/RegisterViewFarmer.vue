@@ -1,7 +1,51 @@
 <script setup>
+<<<<<<< HEAD
 import { requiredValidator, emailValidator, passwordValidator } from '@/utils/validators'
 </script>
 
+=======
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { requiredValidator, emailValidator, passwordValidator } from '@/utils/validators'
+import { supabase, formActionDefault } from '@/utils/supabase.js'
+
+const router = useRouter()
+
+const fullName = ref('')
+const email = ref('')
+const password = ref('')
+
+const form = ref({ ...formActionDefault })
+
+const registerFarmer = async () => {
+  form.value.formProcess = true
+
+  const { data, error } = await supabase.auth.signUp({
+    email: email.value,
+    password: password.value,
+    options: {
+      data: {
+        full_name: fullName.value,
+        role: 'farmer' 
+      }
+    }
+  })
+
+  if (error) {
+    form.value.formStatus = error.status || 500
+    form.value.formErrorMessage = error.message
+    form.value.formProcess = false
+  } else {
+    form.value.formStatus = 200
+    form.value.formSuccessMessage = 'Registration successful! Please check your email to verify your account.'
+    form.value.formProcess = false
+    router.replace('/list-farm')
+  }
+}
+</script>
+
+
+>>>>>>> f347a4394d4c47c7739304c25150711ce882800c
 <template>
     <v-app>
       <v-container fluid class="bg-container d-flex align-center justify-center">
@@ -25,6 +69,7 @@ import { requiredValidator, emailValidator, passwordValidator } from '@/utils/va
                   <p class="text-caption text-grey-darken-1 mb-2">or</p>
   
                   
+<<<<<<< HEAD
                   <v-form fast-fail @submit.prevent>
                   <v-text-field
                     label="Full name"
@@ -50,6 +95,37 @@ import { requiredValidator, emailValidator, passwordValidator } from '@/utils/va
 
                   <v-btn class="mt-3" type="submit" block color="success">Start</v-btn>
                 </v-form>
+=======
+                  <v-form fast-fail @submit.prevent="registerFarmer">
+                    <v-text-field
+                      v-model="fullName"
+                      label="Full name"
+                      variant="outlined"
+                      density="compact"
+                      class="mb-2"
+                      :rules="[requiredValidator]"
+                    ></v-text-field>
+                    <v-text-field
+                      v-model="email"
+                      label="Email"
+                      variant="outlined"
+                      density="compact"
+                      class="mb-2"
+                      :rules="[requiredValidator, emailValidator]"
+                    ></v-text-field>
+                    <v-text-field
+                      v-model="password"
+                      label="Password"
+                      type="password"
+                      variant="outlined"
+                      density="compact"
+                      :rules="[requiredValidator, passwordValidator]"
+                    ></v-text-field>
+
+                    <v-btn class="mt-3" type="submit" block color="success">Start</v-btn>
+                  </v-form>
+
+>>>>>>> f347a4394d4c47c7739304c25150711ce882800c
   
                   <p class="text-caption mt-3">
                     Already have an account? <RouterLink to="/login" class="text-green-darken-2">Log in</RouterLink>
