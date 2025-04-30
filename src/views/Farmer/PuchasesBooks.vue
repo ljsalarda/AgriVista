@@ -25,22 +25,21 @@ const tab = ref('purchased');
                 <v-table>
                   <thead>
                     <tr>
+                      <th>Buyer</th>
                       <th>Product Name</th>
                       <th>Quantity</th>
-                      <th>Buyer</th>
-                      <th>Date Ordered</th>
-                      <th>Order Status</th>
+                      <th>Total Price</th>
+                      <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <!-- Example Row -->
-                    <!-- <tr>
-                      <td>Tomatoes</td>
-                      <td>10kg</td>
-                      <td>Juan Dela Cruz</td>
-                      <td>2025-04-22</td>
-                      <td>Delivered</td>
-                    </tr> -->
+                    <tr v-for="order in orders" :key="order.id">
+                      <td>{{ travelerData.full_name }}</td>
+                      <td>{{ order.Products?.product_name }}</td>
+                      <td>{{ order.quantity }}</td>
+                      <td>₱ {{ order.total_price }}</td>
+                      <td>{{ order.status }}</td>
+                    </tr>
                   </tbody>
                 </v-table>
                 <v-btn color="green" class="mt-4 text-white">
@@ -52,20 +51,23 @@ const tab = ref('purchased');
                 <v-table>
                   <thead>
                     <tr>
-                      <th>Guest Name</th>
+                      <th>Guest</th>
+                      <th>Farm</th>
+                      <th>Location</th>
+                      <th>Farm Description</th>
                       <th>Booking Date</th>
-                      <th>Package</th>
-                      <th>Guests</th>
+                      <th>Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <!-- Example Row -->
-                    <!-- <tr>
-                      <td>Ana Santos</td>
-                      <td>2025-04-25</td>
-                      <td>Farm Tour</td>
-                      <td>4</td>
-                    </tr> -->
+                    <tr v-for="booking in bookings" :key="booking.id">
+                      <td>{{ travelerData.full_name }}</td>
+                      <td>{{ booking.Farms?.farm_name }}</td>
+                      <td>{{ booking.Farms?.location }}</td>
+                      <td>{{ booking.Farms?.farm_description }}</td>
+                      <td>{{ booking.booking_date }}</td>
+                      <td>{{ booking.status }}</td>
+                    </tr>
                   </tbody>
                 </v-table>
                 <v-btn color="green" class="mt-4 text-white">
