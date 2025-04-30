@@ -31,7 +31,7 @@ import DashboardLayout from '@/components/DashboardLayout.vue';
               ></v-text-field>
             </v-col>
         
-            <v-col cols="12" md="12">
+            <v-col cols="12" md="6">
               <v-textarea
                 label="Farm Description"
                 variant="outlined"

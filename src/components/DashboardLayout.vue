@@ -1,3 +1,68 @@
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { isAuthenticated, formActionDefault, supabase } from '@/utils/supabase'
+import { getAvatarText } from '@/utils/helpers'
+
+const router = useRouter()
+
+const drawerOpen = ref(false)
+const menuVisible = ref(false)
+const isLoggedin = ref(false)
+const formAction = ref({ ...formActionDefault })
+
+const userData = ref({
+  initials: '',
+  email: '',
+  full_name: '',
+  role: '',
+})
+
+const getLoggedStatus = async () => {
+  const { data: { session } } = await supabase.auth.getSession()
+  console.log('Session:', session); 
+  isLoggedin.value = !!session
+  if (isLoggedin.value) {
+    await getUser() 
+  }
+}
+
+
+const getUser = async () => {
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (user) {
+    console.log(user.user_metadata);
+    userData.value.email = user.email
+    userData.value.full_name = user.user_metadata?.full_name || ''
+    userData.value.role = user.user_metadata?.role || 'Farmer'
+    userData.value.initials = getAvatarText(user.user_metadata?.full_name || user.email)
+  }
+}
+
+const onLogout = async () => {
+  formAction.value = { ...formActionDefault }
+  formAction.value.formProcess = true
+
+  const { error } = await supabase.auth.signOut()
+  formAction.value.formProcess = false
+
+  if (error) {
+    console.error('Error during logout:', error)
+    return
+  }
+
+  router.replace('/')
+}
+
+onMounted(() => {
+  getLoggedStatus()
+  // getUser()
+  console.log('User data onMounted:', userData.value);  
+})
+
+</script>
+
 <template>
     <v-app>
 
@@ -107,11 +172,11 @@
                         <v-card class="pa-4" width="250">
                             <div class="d-flex align-center mb-4">
                             <v-avatar size="50" class="mr-3">
-                                <img src="https://via.placeholder.com/100" alt="Profile" />
+                              {{ userData.initials || 'NN' }}
                             </v-avatar>
                             <div>
-                                <div class="text-subtitle-2 font-weight-medium">Hanz Dela Cruz</div>
-                                <div class="text-caption text-grey-darken-1">Farmer</div>
+                              <div class="text-subtitle-3 font-weight-bold">{{ userData.full_name }}</div>
+                              <div class="text-subtitle-2 font-weight-medium">{{ userData.role }}</div>
                             </div>
                             </div>
 
@@ -122,6 +187,9 @@
                             class="mt-4"
                             color="red-darken-1"
                             to="/login"
+                            @click="onLogout"
+                            :loading="formAction.formProcess"
+                            :disabled="formAction.formProcess"
                             >
                             <v-icon left>mdi-logout</v-icon> Logout
                             </v-btn>
@@ -136,8 +204,3 @@
       </v-container>
     </v-app>
   </template>
-  
-  <script setup>
-    import { ref } from 'vue'
-    const drawerOpen = ref(false)
-  </script>

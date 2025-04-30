@@ -1,6 +1,75 @@
 <script setup>
 import { ref } from 'vue'
 import { requiredValidator, emailValidator, passwordValidator } from '@/utils/validators'
+import { supabase, formActionDefault } from '@/utils/supabase'
+import { useRouter } from 'vue-router'
+
+const refVform = ref()
+
+const formAction = ref({
+  ...formActionDefault,
+})
+
+const formDataDefault = {
+  email: '',
+  password: '',
+}
+
+const formData = ref({
+  ...formDataDefault,
+})
+
+const router = useRouter()
+
+// This function is triggered on form submit
+const onFormSubmit = () => {
+  refVform.value?.validate().then(({ valid: isValid }) => {
+    if (isValid) onSubmit()
+  })
+}
+
+// This function handles the login process
+const onSubmit = async () => {
+  // Reset Form Action utils; Turn on processing at the same time
+  formAction.value = { ...formActionDefault, formProcess: true }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: formData.value.email,
+    password: formData.value.password,
+  })
+
+  if (error) {
+    // Handle the error message
+    formAction.value.formErrorMessage = error.message
+    formAction.value.formStatus = error.status
+  } else if (data) {
+    // Handle the success message
+    formAction.value.formSuccessMessage = 'Successfully Logged Account.'
+
+    // Fetch user metadata (including role) from Supabase
+    const user = data.user
+    if (user) {
+      // Get role from user metadata
+      const role = user.user_metadata?.role  // Ensure role is stored in user_metadata
+
+      // Redirect based on the role
+      if (role === "farmer") {
+        router.replace('/list-farm')  // Redirect to farmer's page
+      } else if (role === "traveler") {
+        router.replace('/discoverfarm')  // Redirect to traveler's page
+      } else {
+        console.log("Role not found or unrecognized.")
+      }
+    }
+  }
+
+  // Reset Form
+  refVform.value?.reset()
+  // Turn off processing
+  formAction.value.formProcess = false
+
+  
+}
 </script>
 
 <template>
@@ -22,12 +91,13 @@ import { requiredValidator, emailValidator, passwordValidator } from '@/utils/va
               </div>
               <v-divider></v-divider>
               <p class="text-center my-4">or</p>
-              <v-form @submit.prevent>
+              <v-form ref="refVform" @submit.prevent="onFormSubmit">
                 <v-text-field
                   label="Email"
                   variant="outlined"
                   density="comfortable"
                   :rules="[requiredValidator, emailValidator]"
+                  v-model="formData.email"
                 ></v-text-field>
                 <v-text-field
                   label="Password"
@@ -35,8 +105,23 @@ import { requiredValidator, emailValidator, passwordValidator } from '@/utils/va
                   variant="outlined"
                   density="comfortable"
                   :rules="[requiredValidator, passwordValidator]"
+                  v-model="formData.password"
                 ></v-text-field>
-                <v-btn type="submit" block class="login-btn" color="success">Log In</v-btn>
+                <v-btn
+                  type="submit"
+                  block
+                  class="login-btn"
+                  color="success"
+                  :disabled="formAction.formProcess"
+                  :loading="formAction.formProcess"
+                >
+                  <template #default>
+                    Log In
+                  </template>
+                  <template #loading>
+                    <v-progress-circular indeterminate color="white" size="24"></v-progress-circular>
+                  </template>
+                </v-btn>
               </v-form>
               <p class="text-center mt-4">
                 Don't have an account?
