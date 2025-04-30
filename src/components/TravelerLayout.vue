@@ -92,7 +92,7 @@ onMounted(() => {
   
           <v-btn block height="50" class="mb-6 text-grey-darken-2" variant="text"
             prepend-icon="mdi-email-outline" to="/visitfarm" style="justify-content: flex-start; padding-left: 20px;">
-            Visit Farm
+            Booked & Orders
           </v-btn>
   
           <v-btn block height="50" class="mb-6 text-grey-darken-2" variant="text"
@@ -126,7 +126,7 @@ onMounted(() => {
   
               <v-btn block height="50" class="mb-6 text-grey-darken-2" variant="text"
                 prepend-icon="mdi-email-outline" to="/visitfarm" style="justify-content: flex-start; padding-left: 20px;">
-                Visit Farm
+                Booked & Orders
               </v-btn>
   
               <v-btn block height="50" class="mb-6 text-grey-darken-2" variant="text"

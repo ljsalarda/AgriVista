@@ -22,6 +22,33 @@ const openBookingModal = (farm) => {
   dialog.value = true
 }
 
+const placeBooking = async () => {
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    alert("Please log in to place a booking.")
+    return
+  }
+
+  const { error } = await supabase.from('Bookings').insert([
+    {
+      user_id: user.id,
+      farm_id: selectedFarm.value.id,
+      booking_date: new Date().toISOString().split('T')[0], // default to today or use a date picker
+      status: 'pending',
+    }
+  ])
+
+  if (error) {
+    console.error('Booking failed:', error)
+    alert("Failed to place booking.")
+  } else {
+    alert("Booking placed successfully!")
+    dialog.value = false
+  }
+}
+
+
 onMounted(fetchFarms)
 </script>
 
@@ -84,7 +111,10 @@ onMounted(fetchFarms)
 
             <v-card-actions class="px-4 pb-4">
               <v-spacer />
-              <v-btn color="green" variant="flat" class="rounded-pill px-6">Place Booking</v-btn>
+              <v-btn color="green" variant="flat" class="rounded-pill px-6" @click="placeBooking">
+                Place Booking
+              </v-btn>
+
             </v-card-actions>
           </v-card>
         </v-dialog>
