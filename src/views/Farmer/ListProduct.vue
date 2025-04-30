@@ -15,6 +15,11 @@ const products = ref([])
 const dialog = ref(false)
 const confirmDeleteIndex = ref(null)
 
+// Snackbar notification refs
+const snackbar = ref(false)
+const snackbarText = ref('')
+const snackbarColor = ref('success')
+
 const toBase64 = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -42,6 +47,11 @@ const addProduct = async () => {
   products.value.unshift(newProduct)
   clearForm()
   saveToLocalStorage()
+
+  // Show success snackbar
+  snackbarText.value = 'Product successfully added!'
+  snackbarColor.value = 'success'
+  snackbar.value = true
 }
 
 const clearForm = () => {
@@ -100,54 +110,54 @@ onMounted(() => {
         <h2 class="text-h6 font-weight-bold mb-4">Products</h2>
 
         <!-- HORIZONTAL PRODUCTS DISPLAY -->
-          <v-col cols="12">
-            <div class="horizontal-scroll-wrapper">
-              <div class="scroll-content">
-                <v-card
-                  v-for="(product, index) in products"
-                  :key="index"
-                  class="pa-4 product-card"
-                  outlined
-                >
-                  <div v-if="!product.isEditing">
-                    <h3 class="text-subtitle-1 font-weight-bold">{{ product.name }}</h3>
-                    <p>Category: {{ product.category }}</p>
-                    <p>Price: ₱{{ product.price }}</p>
-                    <p>Stock: {{ product.stock }}</p>
-                    <div class="d-flex gap-2 mt-2">
-                      <v-img
-                        v-for="(img, i) in product.images"
-                        :key="i"
-                        :src="img"
-                        max-width="80"
-                        max-height="80"
-                        class="rounded"
-                      />
-                    </div>
-                    <div class="d-flex gap-2 mt-3">
-                      <v-btn color="blue" size="small" @click="toggleEdit(product)">Edit</v-btn>
-                      <v-btn color="red" size="small" @click="requestDelete(index)">Delete</v-btn>
-                    </div>
-                  </div>
-                  <div v-else>
-                    <v-text-field v-model="product.name" label="Product Name" dense />
-                    <v-select
-                      v-model="product.category"
-                      :items="['Fruits', 'Vegetables', 'Herbs', 'Others']"
-                      label="Category"
-                      dense
+        <v-col cols="12">
+          <div class="horizontal-scroll-wrapper">
+            <div class="scroll-content">
+              <v-card
+                v-for="(product, index) in products"
+                :key="index"
+                class="pa-4 product-card"
+                outlined
+              >
+                <div v-if="!product.isEditing">
+                  <h3 class="text-subtitle-1 font-weight-bold">{{ product.name }}</h3>
+                  <p>Category: {{ product.category }}</p>
+                  <p>Price: ₱{{ product.price }}</p>
+                  <p>Stock: {{ product.stock }}</p>
+                  <div class="d-flex gap-2 mt-2">
+                    <v-img
+                      v-for="(img, i) in product.images"
+                      :key="i"
+                      :src="img"
+                      max-width="80"
+                      max-height="80"
+                      class="rounded"
                     />
-                    <v-text-field v-model="product.price" label="Price" type="number" dense />
-                    <v-text-field v-model="product.stock" label="Stock Availability" dense />
-                    <div class="d-flex gap-2 mt-2">
-                      <v-btn color="green" size="small" @click="saveEdit(product)">Save</v-btn>
-                      <v-btn size="small" @click="toggleEdit(product)">Cancel</v-btn>
-                    </div>
                   </div>
-                </v-card>
-              </div>
+                  <div class="d-flex gap-2 mt-3">
+                    <v-btn color="blue" size="small" @click="toggleEdit(product)">Edit</v-btn>
+                    <v-btn color="red" size="small" @click="requestDelete(index)">Delete</v-btn>
+                  </div>
+                </div>
+                <div v-else>
+                  <v-text-field v-model="product.name" label="Product Name" dense />
+                  <v-select
+                    v-model="product.category"
+                    :items="['Fruits', 'Vegetables', 'Herbs', 'Others']"
+                    label="Category"
+                    dense
+                  />
+                  <v-text-field v-model="product.price" label="Price" type="number" dense />
+                  <v-text-field v-model="product.stock" label="Stock Availability" dense />
+                  <div class="d-flex gap-2 mt-2">
+                    <v-btn color="green" size="small" @click="saveEdit(product)">Save</v-btn>
+                    <v-btn size="small" @click="toggleEdit(product)">Cancel</v-btn>
+                  </div>
+                </div>
+              </v-card>
             </div>
-          </v-col>
+          </div>
+        </v-col>
 
         <!-- ADD PRODUCT FORM -->
         <v-card class="pa-6" elevation="2" rounded="lg">
@@ -200,6 +210,11 @@ onMounted(() => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- SNACKBAR NOTIFICATION -->
+    <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
+      {{ snackbarText }}
+    </v-snackbar>
   </DashboardLayout>
 </template>
 
