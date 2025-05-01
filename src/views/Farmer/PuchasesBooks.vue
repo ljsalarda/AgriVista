@@ -24,9 +24,9 @@ const fetchOrders = async () => {
   if (!user) return
 
   const { data, error } = await supabase
-    .from('traveler_orders')
-    .select('*')
-    // .eq('user_id', user.id)
+  .from('traveler_orders')
+  .select('*')
+  .eq('product_owner_id', user.id)
 
     console.log("Orders Data:", data); 
 
@@ -49,9 +49,9 @@ const fetchBookings = async () => {
   if (!user) return
 
   const { data, error } = await supabase
-    .from('traveler_bookings')
-    .select('*')
-    // .eq('user_id', user.id)
+  .from('traveler_bookings')
+  .select('*')
+  .eq('farm_owner_id', user.id)
 
     console.log("Bookings Data:", data);
 
