@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import DashboardLayout from '@/components/DashboardLayout.vue'
 import { supabase } from '@/utils/supabase.js'
@@ -9,35 +9,130 @@ const product_name = ref('')
 const category = ref('')
 const price = ref(null)
 const stock = ref('')
+const snackbar = reactive({
+  show: false,
+  color: 'success',
+  message: ''
+})
+
+// Product list state
+const products = ref([])
+
+// Edit state
+const isEditing = ref(false)
+const editingProduct = ref(null)
 
 // Add product handler
 const addProduct = async () => {
   if (!product_name.value || !category.value || !price.value || !stock.value) {
-    alert('Please fill in all fields.')
+    snackbar.message = 'Please fill in all fields.'
+    snackbar.color = 'error'
+    snackbar.show = true
     return
+  }
+
+  const newProduct = {
+    product_name: product_name.value,
+    category: category.value,
+    price: parseFloat(price.value),
+    stock: stock.value,
   }
 
   const { data, error } = await supabase
     .from('Products')
-    .insert([
-      {
-        product_name: product_name.value,
-        category: category.value,
-        price: parseFloat(price.value),
-        stock: stock.value,
-      }
-    ])
+    .insert([newProduct])
 
   if (error) {
     console.error('Error adding product:', error)
-    alert('Something went wrong!')
+    snackbar.message = 'Something went wrong!'
+    snackbar.color = 'error'
+    snackbar.show = true
   } else {
-    alert('Product added successfully!')
+    snackbar.message = 'Product added successfully!'
+    snackbar.color = 'success'
+    snackbar.show = true
+
+    // Add to local state
+    products.value.push(newProduct)
+
     // Reset form
     product_name.value = ''
     category.value = ''
     price.value = null
     stock.value = ''
+  }
+}
+
+// Edit product handler
+const editProduct = (product) => {
+  isEditing.value = true
+  editingProduct.value = { ...product }
+  product_name.value = product.product_name
+  category.value = product.category
+  price.value = product.price
+  stock.value = product.stock
+}
+
+// Save edited product handler
+const saveProduct = async () => {
+  const updatedProduct = {
+    product_name: product_name.value,
+    category: category.value,
+    price: parseFloat(price.value),
+    stock: stock.value,
+  }
+
+  const { data, error } = await supabase
+    .from('Products')
+    .update(updatedProduct)
+    .eq('id', editingProduct.value.id)
+
+  if (error) {
+    console.error('Error updating product:', error)
+    snackbar.message = 'Something went wrong!'
+    snackbar.color = 'error'
+    snackbar.show = true
+  } else {
+    snackbar.message = 'Product updated successfully!'
+    snackbar.color = 'success'
+    snackbar.show = true
+
+    // Update local state
+    const index = products.value.findIndex(
+      (product) => product.id === editingProduct.value.id
+    )
+    if (index !== -1) {
+      products.value[index] = updatedProduct
+    }
+
+    // Reset form
+    product_name.value = ''
+    category.value = ''
+    price.value = null
+    stock.value = ''
+    isEditing.value = false
+  }
+}
+
+// Delete product handler
+const deleteProduct = async (productId) => {
+  const { data, error } = await supabase
+    .from('Products')
+    .delete()
+    .eq('id', productId)
+
+  if (error) {
+    console.error('Error deleting product:', error)
+    snackbar.message = 'Something went wrong!'
+    snackbar.color = 'error'
+    snackbar.show = true
+  } else {
+    snackbar.message = 'Product deleted successfully!'
+    snackbar.color = 'success'
+    snackbar.show = true
+
+    // Remove from local state
+    products.value = products.value.filter((product) => product.id !== productId)
   }
 }
 </script>
@@ -69,46 +164,60 @@ const addProduct = async () => {
             </v-col>
           </v-row>
           <div class="d-flex justify-start mt-4 gap-4">
-            <v-btn color="green" elevation="0" rounded @click="addProduct">Add</v-btn>
+            <v-btn
+              color="green"
+              elevation="0"
+              rounded
+              @click="isEditing ? saveProduct() : addProduct()"
+            >
+              {{ isEditing ? 'Save' : 'Add' }}
+            </v-btn>
           </div>
         </v-card>
+
+        <!-- Product Cards Section -->
+        <v-row class="mt-6" dense>
+          <v-col
+            v-for="(product, index) in products"
+            :key="product.id"
+            cols="12"
+            sm="6"
+            md="4"
+            lg="3"
+          >
+            <v-card class="pa-2 product-card" elevation="4" rounded="xl">
+              <v-card-title class="text-h6">{{ product.product_name }}</v-card-title>
+              <v-card-subtitle class="mb-2">{{ product.category }}</v-card-subtitle>
+              <v-card-text>
+                <div><strong>Price:</strong> ₱{{ product.price }}</div>
+                <div><strong>Stock:</strong> {{ product.stock }}</div>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn small color="blue" @click="editProduct(product)">Edit</v-btn>
+                <v-btn small color="red" @click="deleteProduct(product.id)">Delete</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-col>
+        </v-row>
       </v-col>
     </v-row>
+
+    <!-- Snackbar -->
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
+      {{ snackbar.message }}
+    </v-snackbar>
   </DashboardLayout>
 </template>
 
 <style scoped>
-.horizontal-scroll-wrapper {
-  overflow-x: auto;
-  overflow-y: hidden;
-  white-space: nowrap;
-  padding: 0 0 12px 0;
-  margin-bottom: 24px;
-}
-
-.scroll-content {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 1rem;
-}
-
-.product-card {
-  flex: 0 0 auto;
-  width: 280px;
-}
-
-.horizontal-scroll-wrapper::-webkit-scrollbar {
-  height: 6px;
-}
-.horizontal-scroll-wrapper::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 4px;
-}
-
-.gap-2 {
-  gap: 0.5rem;
-}
 .gap-4 {
   gap: 1rem;
+}
+.product-card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.product-card:hover {
+  transform: scale(1.05);
 }
 </style>
