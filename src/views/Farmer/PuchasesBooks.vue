@@ -139,12 +139,12 @@ onMounted(() => {
                   </thead>
                   <tbody>
                     <tr v-for="booking in bookings" :key="booking.booking_id">
-                      <td>{{ booking.booking_date }}</td>
-                      <td>{{ booking.status }}</td>
-                      <td>{{ booking.farm_name }}</td>
                       <td>{{ booking.guest_name }}</td>
                       <td>{{ booking.guest_email }}</td>
                       <td>{{ booking.guest_contact }}</td>
+                      <td>{{ booking.farm_name }}</td>
+                      <td>{{ booking.booking_date }}</td>
+                      <td>{{ booking.status }}</td>
                     </tr>
                   </tbody>
                 </v-table>
