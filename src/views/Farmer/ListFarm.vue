@@ -1,13 +1,10 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import DashboardLayout from '@/components/DashboardLayout.vue'
 import { supabase } from '@/utils/supabase.js'
 
-// Router
 const router = useRouter()
-
-// Form state
 
 const farm_name = ref('')
 const location = ref('')
@@ -18,15 +15,37 @@ const activity_description = ref('')
 const loading = ref(false)
 const farms = ref([])
 
-// Snackbar state
 const snackbar = ref(false)
 const snackbarMessage = ref('')
 const snackbarColor = ref('success')
 
-const addFarms = async () => {
-  // Get the current user
+const fetchFarms = async () => {
   const {
-    data: { user },error: authError} = await supabase.auth.getUser()
+    data: { user }, error: authError
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    console.error('Auth error:', authError)
+    return
+  }
+
+  const { data, error } = await supabase
+    .from('Farms')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('id', { ascending: false }) 
+
+  if (error) {
+    console.error('Error fetching farms:', error)
+  } else {
+    farms.value = data
+  }
+}
+
+const addFarms = async () => {
+  const {
+    data: { user }, error: authError
+  } = await supabase.auth.getUser()
 
   if (authError || !user) {
     snackbarMessage.value = 'You must be logged in.'
@@ -52,17 +71,15 @@ const addFarms = async () => {
   loading.value = true
 
   try {
-    const { data, error } = await supabase.from('Farms').insert([
-      {
-        user_id: user.id, 
-        farm_name: farm_name.value,
-        location: location.value,
-        farm_description: farm_description.value,
-        activity_name: activity_name.value,
-        duration: duration.value,
-        activity_description: activity_description.value,
-      },
-    ]).select()
+    const { data, error } = await supabase.from('Farms').insert([{
+      user_id: user.id, 
+      farm_name: farm_name.value,
+      location: location.value,
+      farm_description: farm_description.value,
+      activity_name: activity_name.value,
+      duration: duration.value,
+      activity_description: activity_description.value,
+    }]).select()
 
     if (error) {
       console.error('Error adding farm:', error)
@@ -71,9 +88,7 @@ const addFarms = async () => {
     } else {
       snackbarMessage.value = 'Farm added successfully!'
       snackbarColor.value = 'green'
-      farms.value.unshift(data[0])
-
-      // Clear form
+      farms.value.unshift(data[0])  
       farm_name.value = ''
       location.value = ''
       farm_description.value = ''
@@ -91,6 +106,9 @@ const addFarms = async () => {
   }
 }
 
+onMounted(() => {
+  fetchFarms()
+})
 </script>
 
 <template>
@@ -179,7 +197,6 @@ const addFarms = async () => {
         </v-col>
       </v-row>
 
-      <!-- Display farm cards -->
       <v-row class="mt-6" dense>
         <v-col
           v-for="(farm, index) in farms"
@@ -208,7 +225,6 @@ const addFarms = async () => {
         </v-col>
       </v-row>
 
-      <!-- Snackbar -->
       <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
         {{ snackbarMessage }}
       </v-snackbar>
