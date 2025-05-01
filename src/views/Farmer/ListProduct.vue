@@ -24,6 +24,7 @@ const editingProduct = ref(null)
 
 // Add product handler
 const addProduct = async () => {
+  const {data: { user },error: authError} = await supabase.auth.getUser()
   if (!product_name.value || !category.value || !price.value || !stock.value) {
     snackbar.message = 'Please fill in all fields.'
     snackbar.color = 'error'
@@ -32,6 +33,7 @@ const addProduct = async () => {
   }
 
   const newProduct = {
+    user_id: user.id, 
     product_name: product_name.value,
     category: category.value,
     price: parseFloat(price.value),

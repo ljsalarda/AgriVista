@@ -8,6 +8,7 @@ import { supabase } from '@/utils/supabase.js'
 const router = useRouter()
 
 // Form state
+
 const farm_name = ref('')
 const location = ref('')
 const farm_description = ref('')
@@ -23,6 +24,17 @@ const snackbarMessage = ref('')
 const snackbarColor = ref('success')
 
 const addFarms = async () => {
+  // Get the current user
+  const {
+    data: { user },error: authError} = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    snackbarMessage.value = 'You must be logged in.'
+    snackbarColor.value = 'red'
+    snackbar.value = true
+    return
+  }
+
   if (
     !farm_name.value ||
     !location.value ||
@@ -42,6 +54,7 @@ const addFarms = async () => {
   try {
     const { data, error } = await supabase.from('Farms').insert([
       {
+        user_id: user.id, 
         farm_name: farm_name.value,
         location: location.value,
         farm_description: farm_description.value,
@@ -58,7 +71,7 @@ const addFarms = async () => {
     } else {
       snackbarMessage.value = 'Farm added successfully!'
       snackbarColor.value = 'green'
-      farms.value.unshift(data[0]) // Add to farm card list
+      farms.value.unshift(data[0])
 
       // Clear form
       farm_name.value = ''
@@ -77,6 +90,7 @@ const addFarms = async () => {
     snackbar.value = true
   }
 }
+
 </script>
 
 <template>
