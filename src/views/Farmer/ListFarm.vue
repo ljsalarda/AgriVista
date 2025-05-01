@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import DashboardLayout from '@/components/DashboardLayout.vue'
 import { supabase } from '@/utils/supabase.js'
 
-// Router for optional navigation
+// Router
 const router = useRouter()
 
 // Form state
@@ -15,6 +15,12 @@ const activity_name = ref('')
 const duration = ref('')
 const activity_description = ref('')
 const loading = ref(false)
+const farms = ref([])
+
+// Snackbar state
+const snackbar = ref(false)
+const snackbarMessage = ref('')
+const snackbarColor = ref('success')
 
 const addFarms = async () => {
   if (
@@ -25,7 +31,9 @@ const addFarms = async () => {
     !duration.value ||
     !activity_description.value
   ) {
-    alert('Please fill in all fields.')
+    snackbarMessage.value = 'Please fill in all fields.'
+    snackbarColor.value = 'red'
+    snackbar.value = true
     return
   }
 
@@ -41,13 +49,16 @@ const addFarms = async () => {
         duration: duration.value,
         activity_description: activity_description.value,
       },
-    ])
+    ]).select()
 
     if (error) {
       console.error('Error adding farm:', error)
-      alert('Something went wrong!')
+      snackbarMessage.value = 'Something went wrong!'
+      snackbarColor.value = 'red'
     } else {
-      alert('Farm added successfully!')
+      snackbarMessage.value = 'Farm added successfully!'
+      snackbarColor.value = 'green'
+      farms.value.unshift(data[0]) // Add to farm card list
 
       // Clear form
       farm_name.value = ''
@@ -56,15 +67,14 @@ const addFarms = async () => {
       activity_name.value = ''
       duration.value = ''
       activity_description.value = ''
-
-      // Optional redirect
-      // router.push('/dashboard') // Uncomment and set desired route
     }
   } catch (err) {
     console.error('Unexpected error:', err)
-    alert('An unexpected error occurred!')
+    snackbarMessage.value = 'An unexpected error occurred!'
+    snackbarColor.value = 'red'
   } finally {
     loading.value = false
+    snackbar.value = true
   }
 }
 </script>
@@ -72,86 +82,122 @@ const addFarms = async () => {
 <template>
   <DashboardLayout>
     <template v-slot:app-bar>
-      <v-app-bar-nav-icon></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon />
       <v-app-bar-title>My Farm Dashboard</v-app-bar-title>
     </template>
 
-    <v-row>
-      <v-col cols="12" class="px-6 pt-2">
-        <v-card class="pa-6">
-          <div class="px-6 py-4 mt-4" style="border: 1px solid #ccc;">
-            <v-row dense>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="farm_name"
-                  label="Farm Name"
-                  prepend-inner-icon="mdi-sprout"
-                  variant="outlined"
-                ></v-text-field>
-              </v-col>
+    <v-container fluid>
+      <v-row>
+        <v-col cols="12" class="px-6 pt-2">
+          <v-card class="pa-6">
+            <div class="px-6 py-4 mt-4" style="border: 1px solid #ccc;">
+              <v-row dense>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="farm_name"
+                    label="Farm Name"
+                    prepend-inner-icon="mdi-sprout"
+                    variant="outlined"
+                  />
+                </v-col>
 
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="location"
-                  label="Location"
-                  prepend-inner-icon="mdi-map-marker"
-                  variant="outlined"
-                ></v-text-field>
-              </v-col>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="location"
+                    label="Location"
+                    prepend-inner-icon="mdi-map-marker"
+                    variant="outlined"
+                  />
+                </v-col>
 
-              <v-col cols="12" md="6">
-                <v-textarea
-                  v-model="farm_description"
-                  label="Farm Description"
-                  variant="outlined"
-                  rows="6"
-                ></v-textarea>
-              </v-col>
-            </v-row>
+                <v-col cols="12">
+                  <v-textarea
+                    v-model="farm_description"
+                    label="Farm Description"
+                    variant="outlined"
+                    rows="4"
+                  />
+                </v-col>
+              </v-row>
 
-            <v-row dense>
-              <v-col cols="12" md="6">
-                <v-text-field
-                  v-model="activity_name"
-                  label="Activity Name"
-                  dense
-                  outlined
-                ></v-text-field>
-                <v-text-field
-                  v-model="duration"
-                  label="Duration"
-                  dense
-                  outlined
-                  class="mt-3"
-                ></v-text-field>
-              </v-col>
+              <v-row dense>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    v-model="activity_name"
+                    label="Activity Name"
+                    outlined
+                    dense
+                  />
+                  <v-text-field
+                    v-model="duration"
+                    label="Duration"
+                    outlined
+                    dense
+                    class="mt-3"
+                  />
+                </v-col>
 
-              <v-col cols="12" md="6">
-                <v-textarea
-                  v-model="activity_description"
-                  label="Description"
-                  rows="5"
-                  auto-grow
-                  outlined
-                  dense
-                ></v-textarea>
-              </v-col>
-            </v-row>
+                <v-col cols="12" md="6">
+                  <v-textarea
+                    v-model="activity_description"
+                    label="Activity Description"
+                    auto-grow
+                    outlined
+                    dense
+                    rows="5"
+                  />
+                </v-col>
+              </v-row>
 
-            <v-btn
-              color="green"
-              prepend-icon="mdi-plus"
-              elevation="0"
-              rounded
-              @click="addFarms"
-              :loading="loading"
-              :disabled="loading"
-            >
-              Add Farm
-            </v-btn>
-          </div>
-        </v-card>
-      </v-col>
-    </v-row>
+              <v-btn
+                color="green"
+                prepend-icon="mdi-plus"
+                elevation="0"
+                rounded
+                @click="addFarms"
+                :loading="loading"
+                :disabled="loading"
+              >
+                Add Farm
+              </v-btn>
+            </div>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <!-- Display farm cards -->
+      <v-row class="mt-6" dense>
+        <v-col
+          v-for="(farm, index) in farms"
+          :key="index"
+          cols="12"
+          sm="6"
+          md="4"
+          lg="3"
+        >
+          <v-card elevation="4" class="pa-4">
+            <v-card-title class="text-h6 text-green-darken-3">
+              {{ farm.farm_name }}
+            </v-card-title>
+            <v-card-subtitle>
+              {{ farm.location }}
+            </v-card-subtitle>
+            <v-card-text>
+              <strong>Description:</strong>
+              <p>{{ farm.farm_description }}</p>
+              <strong>Activity:</strong>
+              <p>{{ farm.activity_name }} ({{ farm.duration }})</p>
+              <strong>Details:</strong>
+              <p>{{ farm.activity_description }}</p>
+            </v-card-text>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <!-- Snackbar -->
+      <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
+        {{ snackbarMessage }}
+      </v-snackbar>
+    </v-container>
   </DashboardLayout>
 </template>
