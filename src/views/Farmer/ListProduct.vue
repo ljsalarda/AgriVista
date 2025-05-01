@@ -1,10 +1,8 @@
 <script setup>
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import DashboardLayout from '@/components/DashboardLayout.vue'
+import { ref, reactive, onMounted } from 'vue'
 import { supabase } from '@/utils/supabase.js'
+import DashboardLayout from '@/components/DashboardLayout.vue'
 
-// Form state
 const product_name = ref('')
 const category = ref('')
 const price = ref(null)
@@ -15,16 +13,32 @@ const snackbar = reactive({
   message: ''
 })
 
-// Product list state
 const products = ref([])
 
-// Edit state
 const isEditing = ref(false)
 const editingProduct = ref(null)
+const userId = ref(null) 
 
-// Add product handler
+const fetchProducts = async () => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  userId.value = user.id
+
+  const { data, error } = await supabase
+    .from('Products')
+    .select('*')
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('Error fetching products:', error)
+  } else {
+    products.value = data
+  }
+}
+
 const addProduct = async () => {
-  const {data: { user },error: authError} = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
   if (!product_name.value || !category.value || !price.value || !stock.value) {
     snackbar.message = 'Please fill in all fields.'
     snackbar.color = 'error'
@@ -33,7 +47,7 @@ const addProduct = async () => {
   }
 
   const newProduct = {
-    user_id: user.id, 
+    user_id: user.id,
     product_name: product_name.value,
     category: category.value,
     price: parseFloat(price.value),
@@ -43,6 +57,8 @@ const addProduct = async () => {
   const { data, error } = await supabase
     .from('Products')
     .insert([newProduct])
+    .select()
+    .single() // get inserted row back
 
   if (error) {
     console.error('Error adding product:', error)
@@ -55,7 +71,7 @@ const addProduct = async () => {
     snackbar.show = true
 
     // Add to local state
-    products.value.push(newProduct)
+    products.value.push(data)
 
     // Reset form
     product_name.value = ''
@@ -65,79 +81,12 @@ const addProduct = async () => {
   }
 }
 
-// Edit product handler
-const editProduct = (product) => {
-  isEditing.value = true
-  editingProduct.value = { ...product }
-  product_name.value = product.product_name
-  category.value = product.category
-  price.value = product.price
-  stock.value = product.stock
-}
 
-// Save edited product handler
-const saveProduct = async () => {
-  const updatedProduct = {
-    product_name: product_name.value,
-    category: category.value,
-    price: parseFloat(price.value),
-    stock: stock.value,
-  }
-
-  const { data, error } = await supabase
-    .from('Products')
-    .update(updatedProduct)
-    .eq('id', editingProduct.value.id)
-
-  if (error) {
-    console.error('Error updating product:', error)
-    snackbar.message = 'Something went wrong!'
-    snackbar.color = 'error'
-    snackbar.show = true
-  } else {
-    snackbar.message = 'Product updated successfully!'
-    snackbar.color = 'success'
-    snackbar.show = true
-
-    // Update local state
-    const index = products.value.findIndex(
-      (product) => product.id === editingProduct.value.id
-    )
-    if (index !== -1) {
-      products.value[index] = updatedProduct
-    }
-
-    // Reset form
-    product_name.value = ''
-    category.value = ''
-    price.value = null
-    stock.value = ''
-    isEditing.value = false
-  }
-}
-
-// Delete product handler
-const deleteProduct = async (productId) => {
-  const { data, error } = await supabase
-    .from('Products')
-    .delete()
-    .eq('id', productId)
-
-  if (error) {
-    console.error('Error deleting product:', error)
-    snackbar.message = 'Something went wrong!'
-    snackbar.color = 'error'
-    snackbar.show = true
-  } else {
-    snackbar.message = 'Product deleted successfully!'
-    snackbar.color = 'success'
-    snackbar.show = true
-
-    // Remove from local state
-    products.value = products.value.filter((product) => product.id !== productId)
-  }
-}
+onMounted(() => {
+  fetchProducts()
+})
 </script>
+
 
 <template>
   <DashboardLayout>

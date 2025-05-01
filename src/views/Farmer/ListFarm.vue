@@ -197,33 +197,51 @@ onMounted(() => {
         </v-col>
       </v-row>
 
-      <v-row class="mt-6" dense>
+      <v-row class="mt-10  justify-center" style="gap: 24px;">
         <v-col
           v-for="(farm, index) in farms"
           :key="index"
           cols="12"
-          sm="6"
-          md="4"
-          lg="3"
+          md="5"
+          
         >
-          <v-card elevation="4" class="pa-4">
-            <v-card-title class="text-h6 text-green-darken-3">
+          <v-card elevation="5" class="pa-6 rounded-xl">
+            <div class="d-flex justify-center mb-3">
+              <v-avatar size="96" class="elevation-2">
+                <v-icon size="48" color="grey-lighten-1">mdi-image-off</v-icon>
+              </v-avatar>
+            </div>
+
+            <v-card-title class="text-h6 font-weight-bold text-center">
               {{ farm.farm_name }}
             </v-card-title>
-            <v-card-subtitle>
+
+            <v-card-subtitle class="text-center mb-2 text-grey">
               {{ farm.location }}
             </v-card-subtitle>
-            <v-card-text>
-              <strong>Description:</strong>
-              <p>{{ farm.farm_description }}</p>
-              <strong>Activity:</strong>
-              <p>{{ farm.activity_name }} ({{ farm.duration }})</p>
-              <strong>Details:</strong>
-              <p>{{ farm.activity_description }}</p>
+
+            <v-divider class="mb-2" />
+
+            <v-card-text class="text-body-2">
+              <div class="mb-2">
+                <strong>Description:</strong><br />
+                {{ farm.farm_description }}
+              </div>
+
+              <div class="mb-2">
+                <strong>Activity:</strong><br />
+                {{ farm.activity_name }} ({{ farm.duration }})
+              </div>
+
+              <div>
+                <strong>Details:</strong><br />
+                {{ farm.activity_description }}
+              </div>
             </v-card-text>
           </v-card>
         </v-col>
       </v-row>
+
 
       <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
         {{ snackbarMessage }}
