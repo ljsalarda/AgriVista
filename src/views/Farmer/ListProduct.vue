@@ -14,9 +14,9 @@ const snackbar = reactive({
 })
 
 const products = ref([])
-
 const isEditing = ref(false)
 const editingProduct = ref(null)
+const editDialog = ref(false) // <-- modal state
 const userId = ref(null) 
 
 const fetchProducts = async () => {
@@ -58,7 +58,7 @@ const addProduct = async () => {
     .from('Products')
     .insert([newProduct])
     .select()
-    .single() // get inserted row back
+    .single()
 
   if (error) {
     console.error('Error adding product:', error)
@@ -70,10 +70,8 @@ const addProduct = async () => {
     snackbar.color = 'success'
     snackbar.show = true
 
-    // Add to local state
     products.value.push(data)
 
-    // Reset form
     product_name.value = ''
     category.value = ''
     price.value = null
@@ -81,12 +79,78 @@ const addProduct = async () => {
   }
 }
 
+// Edit modal logic
+function editProduct(product) {
+  editingProduct.value = { ...product }
+  editDialog.value = true
+}
+
+async function saveEditProduct() {
+  if (
+    !editingProduct.value.product_name ||
+    !editingProduct.value.category ||
+    !editingProduct.value.price ||
+    !editingProduct.value.stock
+  ) {
+    snackbar.message = 'Please fill in all fields.'
+    snackbar.color = 'error'
+    snackbar.show = true
+    return
+  }
+
+  console.log('Updating product:', editingProduct.value);
+
+  const { data, error } = await supabase
+    .from('Products')
+    .update({
+      product_name: editingProduct.value.product_name,
+      category: editingProduct.value.category,
+      price: parseFloat(editingProduct.value.price),
+      stock: editingProduct.value.stock,
+    })
+    .eq('product_id', editingProduct.value.product_id)
+    .select()
+    .single()
+
+  if (error) {
+    snackbar.message = 'Failed to update product.'
+    snackbar.color = 'error'
+    snackbar.show = true
+  } else {
+    // Update local list
+    const idx = products.value.findIndex(p => p.product_id === editingProduct.value.product_id)
+    if (idx !== -1) products.value[idx] = data
+    snackbar.message = 'Product updated!'
+    snackbar.color = 'success'
+    snackbar.show = true
+    editDialog.value = false
+  }
+}
+
+async function deleteProduct(product_id) {
+  console.log("Deleting product with ID:", product_id);
+  const { error } = await supabase
+    .from('Products')
+    .delete()
+    .eq('product_id', product_id)
+  if (error) {
+    console.error('Error deleting product:', error);
+    snackbar.message = 'Failed to delete product.'
+    snackbar.color = 'error'
+    snackbar.show = true
+  } else {
+    const idx = products.value.findIndex(p => p.product_id === product_id)
+    if (idx !== -1) products.value.splice(idx, 1)
+    snackbar.message = 'Product deleted!'
+    snackbar.color = 'success'
+    snackbar.show = true
+  }
+}
 
 onMounted(() => {
   fetchProducts()
 })
 </script>
-
 
 <template>
   <DashboardLayout>
@@ -130,7 +194,7 @@ onMounted(() => {
         <v-row class="mt-6" dense>
           <v-col
             v-for="(product, index) in products"
-            :key="product.id"
+            :key="product.product_id"
             cols="12"
             sm="6"
             md="4"
@@ -145,13 +209,35 @@ onMounted(() => {
               </v-card-text>
               <v-card-actions>
                 <v-btn small color="blue" @click="editProduct(product)">Edit</v-btn>
-                <v-btn small color="red" @click="deleteProduct(product.id)">Delete</v-btn>
-              </v-card-actions>
+                <v-btn small color="red" @click="deleteProduct(product.product_id)">Delete</v-btn>              </v-card-actions>
             </v-card>
           </v-col>
         </v-row>
       </v-col>
     </v-row>
+
+    <!-- Edit Product Modal -->
+    <v-dialog v-model="editDialog" max-width="500">
+      <v-card>
+        <v-card-title>Edit Product</v-card-title>
+        <v-card-text>
+          <v-text-field v-model="editingProduct.product_name" label="Product Name" outlined />
+          <v-select
+            v-model="editingProduct.category"
+            :items="['Fruits', 'Vegetables', 'Herbs', 'Others']"
+            label="Category"
+            outlined
+          />
+          <v-text-field v-model="editingProduct.price" label="Price" type="number" outlined />
+          <v-text-field v-model="editingProduct.stock" label="Stock Availability" outlined />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn color="grey" text @click="editDialog = false">Cancel</v-btn>
+          <v-btn color="green" @click="saveEditProduct">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
