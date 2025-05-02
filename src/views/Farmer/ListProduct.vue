@@ -1,10 +1,8 @@
 <script setup>
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import DashboardLayout from '@/components/DashboardLayout.vue'
+import { ref, reactive, onMounted } from 'vue'
 import { supabase } from '@/utils/supabase.js'
+import DashboardLayout from '@/components/DashboardLayout.vue'
 
-// Form state
 const product_name = ref('')
 const category = ref('')
 const price = ref(null)
@@ -15,15 +13,32 @@ const snackbar = reactive({
   message: ''
 })
 
-// Product list state
 const products = ref([])
-
-// Edit state
 const isEditing = ref(false)
 const editingProduct = ref(null)
+const editDialog = ref(false) // <-- modal state
+const userId = ref(null) 
 
-// Add product handler
+const fetchProducts = async () => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  userId.value = user.id
+
+  const { data, error } = await supabase
+    .from('Products')
+    .select('*')
+    .eq('user_id', user.id)
+
+  if (error) {
+    console.error('Error fetching products:', error)
+  } else {
+    products.value = data
+  }
+}
+
 const addProduct = async () => {
+  const { data: { user } } = await supabase.auth.getUser()
   if (!product_name.value || !category.value || !price.value || !stock.value) {
     snackbar.message = 'Please fill in all fields.'
     snackbar.color = 'error'
@@ -32,6 +47,7 @@ const addProduct = async () => {
   }
 
   const newProduct = {
+    user_id: user.id,
     product_name: product_name.value,
     category: category.value,
     price: parseFloat(price.value),
@@ -41,6 +57,8 @@ const addProduct = async () => {
   const { data, error } = await supabase
     .from('Products')
     .insert([newProduct])
+    .select()
+    .single()
 
   if (error) {
     console.error('Error adding product:', error)
@@ -52,10 +70,8 @@ const addProduct = async () => {
     snackbar.color = 'success'
     snackbar.show = true
 
-    // Add to local state
-    products.value.push(newProduct)
+    products.value.push(data)
 
-    // Reset form
     product_name.value = ''
     category.value = ''
     price.value = null
@@ -63,78 +79,77 @@ const addProduct = async () => {
   }
 }
 
-// Edit product handler
-const editProduct = (product) => {
-  isEditing.value = true
+// Edit modal logic
+function editProduct(product) {
   editingProduct.value = { ...product }
-  product_name.value = product.product_name
-  category.value = product.category
-  price.value = product.price
-  stock.value = product.stock
+  editDialog.value = true
 }
 
-// Save edited product handler
-const saveProduct = async () => {
-  const updatedProduct = {
-    product_name: product_name.value,
-    category: category.value,
-    price: parseFloat(price.value),
-    stock: stock.value,
+async function saveEditProduct() {
+  if (
+    !editingProduct.value.product_name ||
+    !editingProduct.value.category ||
+    !editingProduct.value.price ||
+    !editingProduct.value.stock
+  ) {
+    snackbar.message = 'Please fill in all fields.'
+    snackbar.color = 'error'
+    snackbar.show = true
+    return
   }
+
+  console.log('Updating product:', editingProduct.value);
 
   const { data, error } = await supabase
     .from('Products')
-    .update(updatedProduct)
-    .eq('id', editingProduct.value.id)
+    .update({
+      product_name: editingProduct.value.product_name,
+      category: editingProduct.value.category,
+      price: parseFloat(editingProduct.value.price),
+      stock: editingProduct.value.stock,
+    })
+    .eq('product_id', editingProduct.value.product_id)
+    .select()
+    .single()
 
   if (error) {
-    console.error('Error updating product:', error)
-    snackbar.message = 'Something went wrong!'
+    snackbar.message = 'Failed to update product.'
     snackbar.color = 'error'
     snackbar.show = true
   } else {
-    snackbar.message = 'Product updated successfully!'
+    // Update local list
+    const idx = products.value.findIndex(p => p.product_id === editingProduct.value.product_id)
+    if (idx !== -1) products.value[idx] = data
+    snackbar.message = 'Product updated!'
     snackbar.color = 'success'
     snackbar.show = true
-
-    // Update local state
-    const index = products.value.findIndex(
-      (product) => product.id === editingProduct.value.id
-    )
-    if (index !== -1) {
-      products.value[index] = updatedProduct
-    }
-
-    // Reset form
-    product_name.value = ''
-    category.value = ''
-    price.value = null
-    stock.value = ''
-    isEditing.value = false
+    editDialog.value = false
   }
 }
 
-// Delete product handler
-const deleteProduct = async (productId) => {
-  const { data, error } = await supabase
+async function deleteProduct(product_id) {
+  console.log("Deleting product with ID:", product_id);
+  const { error } = await supabase
     .from('Products')
     .delete()
-    .eq('id', productId)
-
+    .eq('product_id', product_id)
   if (error) {
-    console.error('Error deleting product:', error)
-    snackbar.message = 'Something went wrong!'
+    console.error('Error deleting product:', error);
+    snackbar.message = 'Failed to delete product.'
     snackbar.color = 'error'
     snackbar.show = true
   } else {
-    snackbar.message = 'Product deleted successfully!'
+    const idx = products.value.findIndex(p => p.product_id === product_id)
+    if (idx !== -1) products.value.splice(idx, 1)
+    snackbar.message = 'Product deleted!'
     snackbar.color = 'success'
     snackbar.show = true
-
-    // Remove from local state
-    products.value = products.value.filter((product) => product.id !== productId)
   }
 }
+
+onMounted(() => {
+  fetchProducts()
+})
 </script>
 
 <template>
@@ -179,7 +194,7 @@ const deleteProduct = async (productId) => {
         <v-row class="mt-6" dense>
           <v-col
             v-for="(product, index) in products"
-            :key="product.id"
+            :key="product.product_id"
             cols="12"
             sm="6"
             md="4"
@@ -194,13 +209,35 @@ const deleteProduct = async (productId) => {
               </v-card-text>
               <v-card-actions>
                 <v-btn small color="blue" @click="editProduct(product)">Edit</v-btn>
-                <v-btn small color="red" @click="deleteProduct(product.id)">Delete</v-btn>
-              </v-card-actions>
+                <v-btn small color="red" @click="deleteProduct(product.product_id)">Delete</v-btn>              </v-card-actions>
             </v-card>
           </v-col>
         </v-row>
       </v-col>
     </v-row>
+
+    <!-- Edit Product Modal -->
+    <v-dialog v-model="editDialog" max-width="500">
+      <v-card>
+        <v-card-title>Edit Product</v-card-title>
+        <v-card-text>
+          <v-text-field v-model="editingProduct.product_name" label="Product Name" outlined />
+          <v-select
+            v-model="editingProduct.category"
+            :items="['Fruits', 'Vegetables', 'Herbs', 'Others']"
+            label="Category"
+            outlined
+          />
+          <v-text-field v-model="editingProduct.price" label="Price" type="number" outlined />
+          <v-text-field v-model="editingProduct.stock" label="Stock Availability" outlined />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn color="grey" text @click="editDialog = false">Cancel</v-btn>
+          <v-btn color="green" @click="saveEditProduct">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
