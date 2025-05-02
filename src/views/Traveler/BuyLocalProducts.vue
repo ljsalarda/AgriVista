@@ -36,7 +36,7 @@ const placeOrder = async () => {
     product_id: selectedProduct.value.product_id,
     quantity: orderQuantity.value,
     total_price: selectedProduct.value.price * orderQuantity.value,
-    status: 'pending',
+    status: 'Pending',
     }
   ])
 
