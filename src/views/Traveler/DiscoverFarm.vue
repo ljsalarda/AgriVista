@@ -1,17 +1,36 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import TravelerLayout from '@/components/TravelerLayout.vue';
+import TravelerLayout from '@/components/TravelerLayout.vue'
 import { supabase } from '@/utils/supabase.js'
 
 const farms = ref([])
 const tab = ref(1)
 const dialog = ref(false)
 const selectedFarm = ref(null)
+const visit = ref(null) 
+
+const userData = ref({
+  email: '',
+  full_name: '',
+  address: '',
+  contactNo: ''
+})
+
+const getUser = async () => {
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (user) {
+    userData.value.email = user.email
+    userData.value.full_name = user.user_metadata?.full_name
+    userData.value.address = user.user_metadata?.address
+    userData.value.contactNo = user.user_metadata?.contactNo
+  }
+}
 
 const fetchFarms = async () => {
   const { data, error } = await supabase.from('Farms').select('*')
   if (error) {
-    console.error('Error fetching products:', error)
+    console.error('Error fetching farms:', error)
   } else {
     farms.value = data
   }
@@ -19,6 +38,7 @@ const fetchFarms = async () => {
 
 const openBookingModal = (farm) => {
   selectedFarm.value = farm
+  visit.value = new Date().toISOString().slice(0, 16) 
   dialog.value = true
 }
 
@@ -33,9 +53,10 @@ const placeBooking = async () => {
   const { error } = await supabase.from('Bookings').insert([
     {
       user_id: user.id,
-      farm_id: selectedFarm.value.id,
-      booking_date: new Date().toISOString().split('T')[0], // default to today or use a date picker
-      status: 'pending',
+      farm_id: selectedFarm.value.farm_id,
+      booking_date: visit.value,
+      visit: visit.value,
+      status: 'Reservation',
     }
   ])
 
@@ -48,15 +69,17 @@ const placeBooking = async () => {
   }
 }
 
-
-onMounted(fetchFarms)
+onMounted(() => {
+  fetchFarms()
+  getUser()
+})
 </script>
 
 <template>
     <TravelerLayout>
       <v-row>
         <v-col cols="12" class="px-6 pt-2"> 
-          <h2 class="text-h6 font-weight-bold mb-4">Farms</h2>
+          <h2 class="text-h6 font-weight-bold mb-4">🌿 Explore Our Farms</h2>
           <v-window v-model="tab">
             <v-window-item :value="1">
               <v-row class="mt-4" dense>
@@ -76,48 +99,82 @@ onMounted(fetchFarms)
       </v-row>
 
        <!-- Booking Modal -->
-       <v-dialog v-model="dialog" max-width="600" transition="dialog-bottom-transition">
-          <v-card v-if="selectedFarm" class="rounded-xl">
-            <v-img
-              :src="selectedFarm.image_url || 'https://via.placeholder.com/600x200?text=Farm+Image'"
-              height="200"
-              cover
-              class="rounded-t-xl"
-            ></v-img>
+       <v-dialog v-model="dialog" max-width="640" transition="dialog-bottom-transition">
+        <v-card class="rounded-xl elevation-10">
+          <v-img
+            :src="selectedFarm.image_url || 'https://via.placeholder.com/640x200?text=Farm+Image'"
+            height="200"
+            cover
+            class="rounded-t-xl"
+          />
 
-            <v-card-title class="text-h6 font-weight-bold pb-1">
-              {{ selectedFarm.farm_name }}
-            </v-card-title>
+          <v-card-title class="text-h5 font-weight-bold px-6 pt-4">
+            {{ selectedFarm.farm_name }}
+          </v-card-title>
 
-            <v-card-subtitle class="text-subtitle-2 text-grey-darken-1 px-4">
-              {{ selectedFarm.location }}
-            </v-card-subtitle>
+          <v-card-subtitle class="px-6 text-grey-darken-1 mb-2">
+            {{ selectedFarm.location }}
+          </v-card-subtitle>
 
-            <v-card-text class="px-4 pt-2">
-              <div class="mb-4">
-                <div class="font-weight-medium text-body-1 mb-1">Farm Description</div>
-                <div class="text-body-2">{{ selectedFarm.farm_description }}</div>
-              </div>
+          <v-card-text class="px-6">
+            <v-divider class="my-4" />
 
-              <v-divider class="my-3" />
+            <v-row>
+              <v-col cols="12" md="6">
+                <p class="text-subtitle-2 font-weight-medium mb-2">Farm Description</p>
+                <p class="text-body-2">{{ selectedFarm.farm_description }}</p>
+              </v-col>
+              <v-col cols="12" md="6">
+                <p class="text-subtitle-2 font-weight-medium mb-2">Activity</p>
+                <p class="text-body-2"><strong>{{ selectedFarm.activity_name }}</strong></p>
+                <p class="text-body-2">{{ selectedFarm.activity_description }}</p>
+                <p class="text-body-2 text-grey-darken-1">Duration: {{ selectedFarm.duration }}</p>
+              </v-col>
+            </v-row>
 
-              <div>
-                <div class="font-weight-medium text-body-1 mb-1">Activities</div>
-                <div class="text-body-2"><strong>Activity:</strong> {{ selectedFarm.activity_name }}</div>
-                <div class="text-body-2"><strong>Duration:</strong> {{ selectedFarm.duration }}</div>
-                <div class="text-body-2"><strong>Description:</strong> {{ selectedFarm.activity_description }}</div>
-              </div>
-            </v-card-text>
+            <v-divider class="my-4" />
 
-            <v-card-actions class="px-4 pb-4">
-              <v-spacer />
-              <v-btn color="green" variant="flat" class="rounded-pill px-6" @click="placeBooking">
-                Place Booking
-              </v-btn>
+            <div class="mb-4">
+              <p class="text-subtitle-2 font-weight-medium mb-2">Your Info</p>
+              <v-list density="compact" class="bg-transparent">
+                <v-list-item prepend-icon="mdi-account">
+                  <v-list-item-title>{{ userData.full_name }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item prepend-icon="mdi-email">
+                  <v-list-item-title>{{ userData.email }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item prepend-icon="mdi-phone">
+                  <v-list-item-title>{{ userData.contactNo }}</v-list-item-title>
+                </v-list-item>
+                <v-list-item prepend-icon="mdi-home">
+                  <v-list-item-title>{{ userData.address }}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </div>
 
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
+            <v-divider class="my-4" />
+
+            <v-text-field
+              v-model="visit"
+              type="datetime-local"
+              label="Select Visit Date & Time"
+              prepend-icon="mdi-calendar-clock"
+              variant="outlined"
+              color="green"
+              class="rounded-xl"
+            />
+          </v-card-text>
+
+          <v-card-actions class="px-6 pb-4">
+            <v-spacer />
+            <v-btn text color="grey" @click="dialog = false">Cancel</v-btn>
+            <v-btn color="green" variant="flat" class="rounded-pill" @click="placeBooking">
+              Confirm Booking
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
 
     </TravelerLayout>
 </template>

@@ -27,7 +27,7 @@ const fetchOrders = async () => {
     .from('traveler_orders')
     .select('*')
     .eq('product_owner_id', user.id)
-    .in('status', ['Pending'])
+    .in('status', ['Received'])
 
   console.log("Orders Data:", data);
 
@@ -53,7 +53,7 @@ const fetchBookings = async () => {
     .from('traveler_bookings')
     .select('*')
     .eq('farm_owner_id', user.id)
-    .in('status', ['Reservation'])
+    .in('status', ['On Site'])
 
   console.log("Bookings Data:", data);
 
@@ -68,37 +68,35 @@ const fetchBookings = async () => {
   } else {
     console.error('Failed to fetch traveler bookings:', error)
   }
-  
 }
 
-const updateOrderStatus = async (order_id) => {
-  console.log("Updating order with ID:", order_id);
-  const { data, error } = await supabase
+
+const deleteOrderStatus = async (order_id) => {
+  const { error } = await supabase
     .from('Orders')
-    .update({ status: 'Received' })
+    .delete()
     .eq('order_id', order_id)
 
   if (error) {
-    console.error('Error updating order status:', error);
+    console.error('Error deleting order:', error)
   } else {
-    console.log('Order status updated:', data);
-    fetchOrders();
+    // Remove it from the local orders list
+    orders.value = orders.value.filter(order => order.order_id !== order_id)
+    console.log('Order deleted successfully')
   }
-  
-};
+}
 
-const updateBookingStatus = async (booking_id) => {
-  console.log("Updating booking with ID:", booking_id);
-  const { data, error } = await supabase
+const deleteBookingStatus = async (booking_id) => {
+  const { error } = await supabase
     .from('Bookings')
-    .update({ status: 'On Site' })
+    .delete()
     .eq('booking_id', booking_id)
-
   if (error) {
-    console.error('Error updating booking status:', error);
+    console.error('Error deleting booking:', error)
   } else {
-    console.log('Booking status updated:', data);
-    fetchBookings();
+    // Remove it from the local bookings list
+    bookings.value = bookings.value.filter(booking => booking.booking_id !== booking_id)
+    console.log('Booking deleted successfully')
   }
 }
 
@@ -114,7 +112,7 @@ onMounted(() => {
   <DashboardLayout>
     <v-row>
       <v-col cols="12" class="px-6 pt-2">
-        <h2 class="font-weight-bold text-h4 mb-2">Purchases & Bookings</h2>
+        <h2 class="font-weight-bold text-h4 mb-2">Purchases & Bookings Histories</h2>
 
         <v-card>
           <v-tabs v-model="tab" align-tabs="start" color="green">
@@ -147,15 +145,15 @@ onMounted(() => {
                       <td>₱ {{ order.total_price }}</td>
                       <td>{{ order.status }}</td>
                       <td>
-                        <v-btn icon class="mr-1" color="green" size="x-small" @click="updateOrderStatus(order.order_id)">
-                          <v-icon size="16">mdi-check</v-icon>
+                        <v-btn icon class="mr-1" color="green" size="x-small" @click="deleteOrderStatus(order.order_id)">
+                          <v-icon size="16">mdi-delete</v-icon>
                         </v-btn>
                       </td>
                     </tr>
                   </tbody>
                 </v-table>
-                <v-btn color="green" class="mt-4 text-white"  to="/PBhistory">
-                  View Full Sales History
+                <v-btn color="green" class="mt-4 text-white" to="/PuchasesBooks">
+                  Back to Purchases & Bookings
                 </v-btn>
               </v-tabs-window-item>
 
@@ -180,15 +178,16 @@ onMounted(() => {
                       <td>{{ booking.booking_date }}</td>
                       <td>{{ booking.status }}</td>
                       <td>
-                        <v-btn icon class="mr-1" color="green" size="x-small" @click="updateBookingStatus(booking.booking_id)">
-                          <v-icon size="16">mdi-check</v-icon>
+                        <v-btn icon class="mr-1" color="green" size="x-small" @click="deleteBookingStatus(booking.booking_id)">
+
+                          <v-icon size="16">mdi-delete</v-icon>
                         </v-btn>
                       </td>
                     </tr>
                   </tbody>
                 </v-table>
-                <v-btn color="green" class="mt-4 text-white" to="/PBhistory">
-                  View Full Bookings
+                <v-btn color="green" class="mt-4 text-white" to="/PuchasesBooks">
+                  Back to Purchases & Bookings
                 </v-btn>
               </v-tabs-window-item>
             </v-tabs-window>

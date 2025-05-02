@@ -21,7 +21,7 @@ const fetchOrders = async () => {
     .from('Orders')
     .select('*, Products(product_name)')
     .eq('user_id', user.id)
-    .in('status', ['Pending'])
+    .in('status', ['Received' , 'Canceled'])
 
   if (!error) {
     orders.value = data
@@ -36,78 +36,22 @@ const fetchBookings = async () => {
     .from('Bookings')
     .select('*, Farms(farm_name, location, farm_description)')
     .eq('user_id', user.id)
-    .in('status', ['Reservation'])
+    .in('status', ['On Site' , 'Canceled'] )
   if (!error) {
     bookings.value = data
   }
 }
 
-const openOrderDialog = (order) => {
-  selectedOrder.value = { ...order }
-  showOrderDialog.value = true
+
+const cancelOrder = async (orderId) => {
+  await supabase.from('Orders').delete().eq('order_id', orderId)
+  fetchOrders()
 }
 
-const openBookingDialog = (booking) => {
-  selectedBooking.value = { ...booking }
-  showBookingDialog.value = true
+const cancelBooking = async (bookingId) => {
+  await supabase.from('Bookings').delete().eq('booking_id', bookingId)
+  fetchBookings()
 }
-
-const saveOrderChanges = async () => {
-  const { error } = await supabase
-    .from('Orders')
-    .update({ quantity: selectedOrder.value.quantity })
-    .eq('order_id', selectedOrder.value.order_id)
-
-  if (!error) {
-    showOrderDialog.value = false
-    fetchOrders()
-  }
-}
-
-const saveBookingChanges = async () => {
-  const { error } = await supabase
-    .from('Bookings')
-    .update({ booking_date: selectedBooking.value.booking_date })
-    .eq('booking_id', selectedBooking.value.booking_id)
-
-  if (!error) {
-    showBookingDialog.value = false
-    fetchBookings()
-  }
-}
-
-const updateOrderStatus = async (order_id) => {
-  console.log("Updating order with ID:", order_id);
-  const { data, error } = await supabase
-    .from('Orders')
-    .update({ status: 'Canceled' })
-    .eq('order_id', order_id)
-
-  if (error) {
-    console.error('Error updating order status:', error);
-  } else {
-    console.log('Order status updated:', data);
-    fetchOrders();
-  }
-  
-};
-
-const updateBookingStatus = async (booking_id) => {
-  console.log("Updating booking with ID:", booking_id);
-  const { data, error } = await supabase
-    .from('Bookings')
-    .update({ status: 'Canceled' })
-    .eq('booking_id', booking_id)
-
-  if (error) {
-    console.error('Error updating booking status:', error);
-  } else {
-    console.log('Booking status updated:', data);
-    fetchBookings();
-  }
-}
-
-
 
 onMounted(() => {
   fetchOrders()
@@ -119,7 +63,7 @@ onMounted(() => {
   <TravelerLayout>
     <v-row>
       <v-col cols="12" class="px-6 pt-2">
-        <h2 class="text-h6 font-weight-bold mb-4">History</h2>
+        <h2 class="text-h6 font-weight-bold mb-4">Explore Farms</h2>
 
         <v-card>
           <v-tabs v-model="tab" align-tabs="start" color="green">
@@ -148,19 +92,13 @@ onMounted(() => {
                       <td>₱ {{ order.total_price }}</td>
                       <td>{{ order.status }}</td>
                       <td>
-                        <v-btn icon class="mr-1" @click="openOrderDialog(order)">
-                          <v-icon>mdi-pencil</v-icon>
-                        </v-btn>
-                        <v-btn color="red" @click="updateOrderStatus(order.order_id)">
-                          Cancel
+                        <v-btn icon color="red" @click="cancelOrder(order.order_id)">
+                          <v-icon>mdi-delete</v-icon>
                         </v-btn>
                       </td>
                     </tr>
                   </tbody>
                 </v-table>
-                <v-btn color="green" class="mt-4 text-white"  to="/OBhistory">
-                  View Orders History
-                </v-btn>
               </v-tabs-window-item>
 
               <!-- Bookings Tab -->
@@ -182,19 +120,13 @@ onMounted(() => {
                       <td>{{ booking.booking_date }}</td>
                       <td>{{ booking.status }}</td>
                       <td>
-                        <v-btn icon class="mr-1" @click="openBookingDialog(booking)">
-                          <v-icon>mdi-calendar-edit</v-icon>
-                        </v-btn>
-                        <v-btn  color="red" @click="updateBookingStatus(booking.booking_id)">
-                          Cancel
+                        <v-btn icon color="red" @click="cancelBooking(booking.booking_id)">
+                          <v-icon>mdi-delete</v-icon>
                         </v-btn>
                       </td>
                     </tr>
                   </tbody>
                 </v-table>
-                <v-btn color="green" class="mt-4 text-white"  to="/OBhistory">
-                  View Booking History
-                </v-btn>
               </v-tabs-window-item>
             </v-tabs-window>
           </v-card-text>
