@@ -12,6 +12,7 @@ import VisitFarm from '@/views/Traveler/VisitFarm.vue'
 import TravelerAccount from '@/views/Traveler/TravelerAccount.vue'
 import BuyLocalProducts from '@/views/Traveler/BuyLocalProducts.vue'
 import Landing from '@/views/LandingPage/Landing.vue'
+import PurchasesBooksHistory from '@/views/Farmer/PurchasesBooksHistory.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -84,6 +85,11 @@ const router = createRouter({
       path: '/landing',
       name: 'landing',
       component: Landing, 
+    },
+    {
+      path: '/PBhistory',
+      name: 'PBhistory',
+      component: PurchasesBooksHistory, 
     },
   ],
 })
