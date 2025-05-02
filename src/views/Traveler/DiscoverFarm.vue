@@ -53,7 +53,7 @@ const placeBooking = async () => {
   const { error } = await supabase.from('Bookings').insert([
     {
       user_id: user.id,
-      farm_id: selectedFarm.value.id,
+      farm_id: selectedFarm.value.farm_id,
       booking_date: visit.value,
       visit: visit.value,
       status: 'Reservation',

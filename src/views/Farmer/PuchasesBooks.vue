@@ -13,7 +13,7 @@ const fetchTravelerData = async () => {
   if (user) {
     travelerData.value = {
       full_name: user.user_metadata.full_name || 'Traveler',
-      email: user.email || 'No email',
+
       contactNo: user.user_metadata.contactNo || 'No Number'
     }
   }
@@ -24,18 +24,18 @@ const fetchOrders = async () => {
   if (!user) return
 
   const { data, error } = await supabase
-  .from('traveler_orders')
-  .select('*')
-  .eq('product_owner_id', user.id)
+    .from('traveler_orders')
+    .select('*')
+    .eq('product_owner_id', user.id)
 
-    console.log("Orders Data:", data); 
+  console.log("Orders Data:", data);
 
   if (!error) {
     orders.value = data.map(order => ({
       ...order,
       user: {
         full_name: order.buyer_name || 'Traveler',
-        email: order.buyer_email || 'No email',
+
         contactNo: order.buyer_contact || 'No Number'
       }
     }))
@@ -49,18 +49,17 @@ const fetchBookings = async () => {
   if (!user) return
 
   const { data, error } = await supabase
-  .from('traveler_bookings')
-  .select('*')
-  .eq('farm_owner_id', user.id)
+    .from('traveler_bookings')
+    .select('*')
+    .eq('farm_owner_id', user.id)
 
-    console.log("Bookings Data:", data);
+  console.log("Bookings Data:", data);
 
   if (!error) {
     bookings.value = data.map(booking => ({
       ...booking,
       user: {
         full_name: booking.guest_name || 'Traveler',
-        email: booking.guest_email || 'No email',
         contactNo: booking.guest_contact || 'No Number'
       }
     }))
@@ -69,6 +68,35 @@ const fetchBookings = async () => {
   }
 }
 
+const updateOrderStatus = async (order_id) => {
+  console.log("Updating order with ID:", order_id);
+  const { data, error } = await supabase
+    .from('Orders')
+    .update({ status: 'Received' })
+    .eq('order_id', order_id)
+
+  if (error) {
+    console.error('Error updating order status:', error);
+  } else {
+    console.log('Order status updated:', data);
+    fetchOrders();
+  }
+};
+
+const updateBookingStatus = async (booking_id) => {
+  console.log("Updating booking with ID:", booking_id);
+  const { data, error } = await supabase
+    .from('Bookings')
+    .update({ status: 'On Site' })
+    .eq('booking_id', booking_id)
+
+  if (error) {
+    console.error('Error updating booking status:', error);
+  } else {
+    console.log('Booking status updated:', data);
+    fetchBookings();
+  }
+}
 
 
 onMounted(() => {
@@ -77,7 +105,6 @@ onMounted(() => {
   fetchBookings()
 })
 </script>
-
 
 <template>
   <DashboardLayout>
@@ -99,23 +126,30 @@ onMounted(() => {
                   <thead>
                     <tr>
                       <th>Buyer</th>
-                      <th>Email</th>
                       <th>Phone Number</th>
                       <th>Product Name</th>
                       <th>Quantity</th>
                       <th>Total Price</th>
                       <th>Status</th>
+                      <th>Actions</th>  <!-- Added actions column -->
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="order in orders" :key="order.order_id">
                       <td>{{ order.user?.full_name }}</td>
-                      <td>{{ order.user?.email }}</td>
                       <td>{{ order.user?.contactNo }}</td>
                       <td>{{ order.product_name }}</td>
                       <td>{{ order.quantity }}</td>
                       <td>₱ {{ order.total_price }}</td>
                       <td>{{ order.status }}</td>
+                      <td>
+                        <v-btn icon class="mr-1" color="green" size="x-small" @click="updateOrderStatus(order.order_id)">
+                          <v-icon size="16">mdi-check</v-icon>
+                        </v-btn>
+                        <v-btn icon color="red" size="x-small" @click="cancelOrder(order.order_id)">
+                          <v-icon size="16">mdi-delete</v-icon>
+                        </v-btn>
+                      </td>
                     </tr>
                   </tbody>
                 </v-table>
@@ -130,21 +164,28 @@ onMounted(() => {
                   <thead>
                     <tr>
                       <th>Guest</th>
-                      <th>Email</th>
                       <th>Phone Number</th>
                       <th>Farm</th>
                       <th>Booking Date</th>
                       <th>Status</th>
+                      <th>Actions</th> <!-- Added actions column -->
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="booking in bookings" :key="booking.booking_id">
                       <td>{{ booking.guest_name }}</td>
-                      <td>{{ booking.guest_email }}</td>
                       <td>{{ booking.guest_contact }}</td>
                       <td>{{ booking.farm_name }}</td>
                       <td>{{ booking.booking_date }}</td>
                       <td>{{ booking.status }}</td>
+                      <td>
+                        <v-btn icon class="mr-1" color="green" size="x-small" @click="updateBookingStatus(booking.booking_id)">
+                          <v-icon size="16">mdi-check</v-icon>
+                        </v-btn>
+                        <v-btn icon color="red" size="x-small" @click="cancelBooking(booking.booking_id)">
+                          <v-icon size="16">mdi-delete</v-icon>
+                        </v-btn>
+                      </td>
                     </tr>
                   </tbody>
                 </v-table>
