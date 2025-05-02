@@ -13,6 +13,7 @@ import TravelerAccount from '@/views/Traveler/TravelerAccount.vue'
 import BuyLocalProducts from '@/views/Traveler/BuyLocalProducts.vue'
 import Landing from '@/views/LandingPage/Landing.vue'
 import PurchasesBooksHistory from '@/views/Farmer/PurchasesBooksHistory.vue'
+import OrdersBooksHistory from '@/views/Traveler/OrdersBooksHistory.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -90,6 +91,11 @@ const router = createRouter({
       path: '/PBhistory',
       name: 'PBhistory',
       component: PurchasesBooksHistory, 
+    },
+    {
+      path: '/OBhistory',
+      name: 'OBhistory',
+      component: OrdersBooksHistory, 
     },
   ],
 })
