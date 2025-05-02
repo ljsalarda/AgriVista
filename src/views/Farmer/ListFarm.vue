@@ -113,12 +113,9 @@ onMounted(() => {
 
 <template>
   <DashboardLayout>
-    <template v-slot:app-bar>
-      <v-app-bar-nav-icon />
-      <v-app-bar-title>My Farm Dashboard</v-app-bar-title>
-    </template>
 
-    <v-container fluid>
+    <v-container>
+      
       <v-row>
         <v-col cols="12" class="px-6 pt-2">
           <v-card class="pa-6">
@@ -197,15 +194,17 @@ onMounted(() => {
         </v-col>
       </v-row>
 
-      <v-row class="mt-10  justify-center" style="gap: 24px;">
+      <v-row class="mt-6 justify-center" style="gap: 24px;" dense>
         <v-col
           v-for="(farm, index) in farms"
           :key="index"
           cols="12"
-          md="5"
-          
+          sm="6"
+          md="6"
+          lg="5"
         >
-          <v-card elevation="5" class="pa-6 rounded-xl">
+          <v-card elevation="5" class="pa-4 rounded-xl">
+            <!-- Avatar placeholder -->
             <div class="d-flex justify-center mb-3">
               <v-avatar size="96" class="elevation-2">
                 <v-icon size="48" color="grey-lighten-1">mdi-image-off</v-icon>
