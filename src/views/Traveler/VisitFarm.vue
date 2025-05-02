@@ -4,31 +4,31 @@ import TravelerLayout from '@/components/TravelerLayout.vue'
 import { supabase } from '@/utils/supabase.js'
 
 const tab = ref(null)
-const showProfile = ref(false)
-
 const orders = ref([])
 const bookings = ref([])
 
+const selectedOrder = ref(null)
+const selectedBooking = ref(null)
+
+const showOrderDialog = ref(false)
+const showBookingDialog = ref(false)
+
 const fetchOrders = async () => {
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) return
 
   const { data, error } = await supabase
     .from('Orders')
-    .select(`*, Products(product_name)`)
+    .select('*, Products(product_name)')
     .eq('user_id', user.id)
 
   if (!error) {
     orders.value = data
-  } else {
-    console.error('Failed to fetch orders:', error)
   }
 }
 
 const fetchBookings = async () => {
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) return
 
   const { data, error } = await supabase
@@ -38,9 +38,51 @@ const fetchBookings = async () => {
 
   if (!error) {
     bookings.value = data
-  } else {
-    console.error('Failed to fetch bookings:', error)
   }
+}
+
+const openOrderDialog = (order) => {
+  selectedOrder.value = { ...order }
+  showOrderDialog.value = true
+}
+
+const openBookingDialog = (booking) => {
+  selectedBooking.value = { ...booking }
+  showBookingDialog.value = true
+}
+
+const saveOrderChanges = async () => {
+  const { error } = await supabase
+    .from('Orders')
+    .update({ quantity: selectedOrder.value.quantity })
+    .eq('order_id', selectedOrder.value.order_id)
+
+  if (!error) {
+    showOrderDialog.value = false
+    fetchOrders()
+  }
+}
+
+const saveBookingChanges = async () => {
+  const { error } = await supabase
+    .from('Bookings')
+    .update({ booking_date: selectedBooking.value.booking_date })
+    .eq('booking_id', selectedBooking.value.booking_id)
+
+  if (!error) {
+    showBookingDialog.value = false
+    fetchBookings()
+  }
+}
+
+const cancelOrder = async (orderId) => {
+  await supabase.from('Orders').delete().eq('order_id', orderId)
+  fetchOrders()
+}
+
+const cancelBooking = async (bookingId) => {
+  await supabase.from('Bookings').delete().eq('booking_id', bookingId)
+  fetchBookings()
 }
 
 onMounted(() => {
@@ -49,17 +91,13 @@ onMounted(() => {
 })
 </script>
 
-
 <template>
-    <TravelerLayout>
-      <v-row>
-        
-        <v-col cols="12" class="px-6 pt-2"> 
-          
+  <TravelerLayout>
+    <v-row>
+      <v-col cols="12" class="px-6 pt-2">
+        <h2 class="text-h6 font-weight-bold mb-4">Explore Farms</h2>
 
-          <h2 class="text-h6 font-weight-bold mb-4">Explore Farms</h2>
-
-          <v-card>
+        <v-card>
           <v-tabs v-model="tab" align-tabs="start" color="green">
             <v-tab value="purchased">Ordered Products</v-tab>
             <v-tab value="bookings">Farm Booked</v-tab>
@@ -67,7 +105,7 @@ onMounted(() => {
 
           <v-card-text>
             <v-tabs-window v-model="tab">
-              <!-- Ordered Products Tab -->
+              <!-- Orders Tab -->
               <v-tabs-window-item value="purchased">
                 <v-table>
                   <thead>
@@ -76,60 +114,93 @@ onMounted(() => {
                       <th>Quantity</th>
                       <th>Total Price</th>
                       <th>Status</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="order in orders" :key="order.id">
+                    <tr v-for="order in orders" :key="order.order_id">
                       <td>{{ order.Products?.product_name }}</td>
                       <td>{{ order.quantity }}</td>
                       <td>₱ {{ order.total_price }}</td>
                       <td>{{ order.status }}</td>
+                      <td>
+                        <v-btn icon class="mr-1" @click="openOrderDialog(order)">
+                          <v-icon>mdi-pencil</v-icon>
+                        </v-btn>
+                        <v-btn icon color="red" @click="cancelOrder(order.order_id)">
+                          <v-icon>mdi-delete</v-icon>
+                        </v-btn>
+                      </td>
                     </tr>
                   </tbody>
                 </v-table>
-                <v-btn color="green" class="mt-4 text-white">
-                  View Full Sales History
-                </v-btn>
               </v-tabs-window-item>
 
-              <!-- Farm Booked Tab -->
+              <!-- Bookings Tab -->
               <v-tabs-window-item value="bookings">
                 <v-table>
                   <thead>
                     <tr>
                       <th>Farm</th>
                       <th>Location</th>
-                      <th>Farm Description</th>
                       <th>Booking Date</th>
                       <th>Status</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="booking in bookings" :key="booking.id">
+                    <tr v-for="booking in bookings" :key="booking.booking_id">
                       <td>{{ booking.Farms?.farm_name }}</td>
                       <td>{{ booking.Farms?.location }}</td>
-                      <td>{{ booking.Farms?.farm_description }}</td>
                       <td>{{ booking.booking_date }}</td>
                       <td>{{ booking.status }}</td>
+                      <td>
+                        <v-btn icon class="mr-1" @click="openBookingDialog(booking)">
+                          <v-icon>mdi-calendar-edit</v-icon>
+                        </v-btn>
+                        <v-btn icon color="red" @click="cancelBooking(booking.booking_id)">
+                          <v-icon>mdi-delete</v-icon>
+                        </v-btn>
+                      </td>
                     </tr>
                   </tbody>
                 </v-table>
-                <v-btn color="green" class="mt-4 text-white">
-                  View Full Bookings
-                </v-btn>
               </v-tabs-window-item>
-
             </v-tabs-window>
           </v-card-text>
         </v-card>
-          
-        </v-col>
+      </v-col>
+    </v-row>
 
-      </v-row>
-    </TravelerLayout>
-  </template>
-  
+    <!-- Order Dialog -->
+    <v-dialog v-model="showOrderDialog" max-width="400">
+      <v-card>
+        <v-card-title>Edit Quantity</v-card-title>
+        <v-card-text>
+          <v-text-field label="Quantity" type="number" v-model="selectedOrder.quantity" min="1" />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="showOrderDialog = false">Cancel</v-btn>
+          <v-btn color="green" text @click="saveOrderChanges">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
-  
-  <style scoped>
-  </style>
+    <!-- Booking Dialog -->
+    <v-dialog v-model="showBookingDialog" max-width="400">
+      <v-card>
+        <v-card-title>Reschedule Booking</v-card-title>
+        <v-card-text>
+          <v-text-field label="New Booking Date" type="date" v-model="selectedBooking.booking_date" />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn text @click="showBookingDialog = false">Cancel</v-btn>
+          <v-btn color="green" text @click="saveBookingChanges">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </TravelerLayout>
+</template>
+
+<style scoped>
+</style>
