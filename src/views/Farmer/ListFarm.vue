@@ -1,10 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import DashboardLayout from '@/components/DashboardLayout.vue'
+import { ref, reactive, onMounted } from 'vue'
 import { supabase } from '@/utils/supabase.js'
-
-const router = useRouter()
+import DashboardLayout from '@/components/DashboardLayout.vue'
 
 const farm_name = ref('')
 const location = ref('')
@@ -12,28 +9,29 @@ const farm_description = ref('')
 const activity_name = ref('')
 const duration = ref('')
 const activity_description = ref('')
-const loading = ref(false)
-const farms = ref([])
+const snackbar = reactive({
+  show: false,
+  color: 'success',
+  message: ''
+})
 
-const snackbar = ref(false)
-const snackbarMessage = ref('')
-const snackbarColor = ref('success')
+const farms = ref([])
+const isEditing = ref(false)
+const editingFarm = ref(null)
+const editDialog = ref(false)
+const loading = ref(false)
+const userId = ref(null)
 
 const fetchFarms = async () => {
-  const {
-    data: { user }, error: authError
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
 
-  if (authError || !user) {
-    console.error('Auth error:', authError)
-    return
-  }
+  userId.value = user.id
 
   const { data, error } = await supabase
     .from('Farms')
     .select('*')
     .eq('user_id', user.id)
-    .order('id', { ascending: false }) 
 
   if (error) {
     console.error('Error fetching farms:', error)
@@ -42,67 +40,111 @@ const fetchFarms = async () => {
   }
 }
 
-const addFarms = async () => {
-  const {
-    data: { user }, error: authError
-  } = await supabase.auth.getUser()
-
-  if (authError || !user) {
-    snackbarMessage.value = 'You must be logged in.'
-    snackbarColor.value = 'red'
-    snackbar.value = true
+const addFarm = async () => {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!farm_name.value || !location.value || !farm_description.value || !activity_name.value || !duration.value || !activity_description.value) {
+    snackbar.message = 'Please fill in all fields.'
+    snackbar.color = 'error'
+    snackbar.show = true
     return
   }
 
-  if (
-    !farm_name.value ||
-    !location.value ||
-    !farm_description.value ||
-    !activity_name.value ||
-    !duration.value ||
-    !activity_description.value
-  ) {
-    snackbarMessage.value = 'Please fill in all fields.'
-    snackbarColor.value = 'red'
-    snackbar.value = true
+  const newFarm = {
+    user_id: user.id,
+    farm_name: farm_name.value,
+    location: location.value,
+    farm_description: farm_description.value,
+    activity_name: activity_name.value,
+    duration: duration.value,
+    activity_description: activity_description.value,
+  }
+
+  const { data, error } = await supabase
+    .from('Farms')
+    .insert([newFarm])
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error adding farm:', error)
+    snackbar.message = 'Something went wrong!'
+    snackbar.color = 'error'
+    snackbar.show = true
+  } else {
+    snackbar.message = 'Farm added successfully!'
+    snackbar.color = 'success'
+    snackbar.show = true
+    farms.value.push(data)
+
+    farm_name.value = ''
+    location.value = ''
+    farm_description.value = ''
+    activity_name.value = ''
+    duration.value = ''
+    activity_description.value = ''
+  }
+}
+
+// Edit modal logic
+function editFarm(farm) {
+  editingFarm.value = { ...farm }
+  editDialog.value = true
+}
+
+async function saveEditFarm() {
+  if (!editingFarm.value.farm_name || !editingFarm.value.location || !editingFarm.value.farm_description || !editingFarm.value.activity_name || !editingFarm.value.duration || !editingFarm.value.activity_description) {
+    snackbar.message = 'Please fill in all fields.'
+    snackbar.color = 'error'
+    snackbar.show = true
     return
   }
 
-  loading.value = true
+  const { data, error } = await supabase
+    .from('Farms')
+    .update({
+      farm_name: editingFarm.value.farm_name,
+      location: editingFarm.value.location,
+      farm_description: editingFarm.value.farm_description,
+      activity_name: editingFarm.value.activity_name,
+      duration: editingFarm.value.duration,
+      activity_description: editingFarm.value.activity_description,
+    })
+    .eq('id', editingFarm.value.id)
+    .select()
+    .single()
 
-  try {
-    const { data, error } = await supabase.from('Farms').insert([{
-      user_id: user.id, 
-      farm_name: farm_name.value,
-      location: location.value,
-      farm_description: farm_description.value,
-      activity_name: activity_name.value,
-      duration: duration.value,
-      activity_description: activity_description.value,
-    }]).select()
+  if (error) {
+    snackbar.message = 'Failed to update farm.'
+    snackbar.color = 'error'
+    snackbar.show = true
+  } else {
+    // Update local list
+    const idx = farms.value.findIndex(f => f.id === editingFarm.value.id)
+    if (idx !== -1) farms.value[idx] = data
+    snackbar.message = 'Farm updated!'
+    snackbar.color = 'success'
+    snackbar.show = true
+    editDialog.value = false
+  }
+}
 
-    if (error) {
-      console.error('Error adding farm:', error)
-      snackbarMessage.value = 'Something went wrong!'
-      snackbarColor.value = 'red'
-    } else {
-      snackbarMessage.value = 'Farm added successfully!'
-      snackbarColor.value = 'green'
-      farms.value.unshift(data[0])  
-      farm_name.value = ''
-      location.value = ''
-      farm_description.value = ''
-      activity_name.value = ''
-      duration.value = ''
-      activity_description.value = ''
-    }
-  } catch (err) {
-    console.error('Unexpected error:', err)
-    snackbarMessage.value = 'An unexpected error occurred!'
-    snackbarColor.value = 'red'
-  } finally {
-    loading.value = false
-    snackbar.value = true
+async function deleteFarm(id) {
+  const { error } = await supabase
+    .from('Farms')
+    .delete()
+    .eq('id', id)
+
+  if (error) {
+    console.error('Error deleting farm:', error)
+    snackbar.message = 'Failed to delete farm.'
+    snackbar.color = 'error'
+    snackbar.show = true
+  } else {
+    const idx = farms.value.findIndex(f => f.id === id)
+    if (idx !== -1) farms.value.splice(idx, 1)
+    snackbar.message = 'Farm deleted!'
+    snackbar.color = 'success'
+    snackbar.show = true
   }
 }
 
@@ -113,121 +155,98 @@ onMounted(() => {
 
 <template>
   <DashboardLayout>
-    <template v-slot:app-bar>
-      <v-app-bar-nav-icon />
-      <v-app-bar-title>My Farm Dashboard</v-app-bar-title>
-    </template>
+    <v-row>
+      <v-col cols="12" class="px-6 pt-2">
+        <h2 class="text-h6 font-weight-bold mb-4">Farms</h2>
 
-    <v-container fluid>
-      <v-row>
-        <v-col cols="12" class="px-6 pt-2">
-          <v-card class="pa-6">
-            <div class="px-6 py-4 mt-4" style="border: 1px solid #ccc;">
-              <v-row dense>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="farm_name"
-                    label="Farm Name"
-                    prepend-inner-icon="mdi-sprout"
-                    variant="outlined"
-                  />
-                </v-col>
+        <v-card class="pa-6" elevation="2" rounded="lg">
+          <v-row dense>
+            <v-col cols="12" md="6">
+              <v-text-field v-model="farm_name" label="Farm Name" outlined />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field v-model="location" label="Location" outlined />
+            </v-col>
+            <v-col cols="12">
+              <v-textarea v-model="farm_description" label="Farm Description" outlined rows="4" />
+            </v-col>
+          </v-row>
+          <v-row dense>
+            <v-col cols="12" md="6">
+              <v-text-field v-model="activity_name" label="Activity Name" outlined />
+              <v-text-field v-model="duration" label="Duration" outlined class="mt-3" />
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-textarea v-model="activity_description" label="Activity Description" outlined rows="5" />
+            </v-col>
+          </v-row>
+          <div class="d-flex justify-start mt-4 gap-4">
+            <v-btn color="green" elevation="0" rounded @click="addFarm">
+              Add Farm
+            </v-btn>
+          </div>
+        </v-card>
 
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="location"
-                    label="Location"
-                    prepend-inner-icon="mdi-map-marker"
-                    variant="outlined"
-                  />
-                </v-col>
+        <!-- Farm Cards Section -->
+        <v-row class="mt-6" dense>
+          <v-col
+            v-for="(farm, index) in farms"
+            :key="farm.id"
+            cols="12"
+            sm="6"
+            md="4"
+            lg="3"
+          >
+            <v-card class="pa-2 farm-card" elevation="4" rounded="xl">
+              <v-card-title class="text-h6">{{ farm.farm_name }}</v-card-title>
+              <v-card-subtitle>{{ farm.location }}</v-card-subtitle>
+              <v-card-text>
+                <div><strong>Description:</strong> {{ farm.farm_description }}</div>
+                <div><strong>Activity:</strong> {{ farm.activity_name }}</div>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn small color="blue" @click="editFarm(farm)">Edit</v-btn>
+                <v-btn small color="red" @click="deleteFarm(farm.id)">Delete</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-col>
+    </v-row>
 
-                <v-col cols="12">
-                  <v-textarea
-                    v-model="farm_description"
-                    label="Farm Description"
-                    variant="outlined"
-                    rows="4"
-                  />
-                </v-col>
-              </v-row>
+    <!-- Edit Farm Modal -->
+    <v-dialog v-model="editDialog" max-width="500">
+      <v-card>
+        <v-card-title>Edit Farm</v-card-title>
+        <v-card-text>
+          <v-text-field v-model="editingFarm.farm_name" label="Farm Name" outlined />
+          <v-text-field v-model="editingFarm.location" label="Location" outlined />
+          <v-textarea v-model="editingFarm.farm_description" label="Farm Description" outlined rows="4" />
+          <v-text-field v-model="editingFarm.activity_name" label="Activity Name" outlined />
+          <v-text-field v-model="editingFarm.duration" label="Duration" outlined />
+          <v-textarea v-model="editingFarm.activity_description" label="Activity Description" outlined rows="5" />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn color="grey" text @click="editDialog = false">Cancel</v-btn>
+          <v-btn color="green" @click="saveEditFarm">Save</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
-              <v-row dense>
-                <v-col cols="12" md="6">
-                  <v-text-field
-                    v-model="activity_name"
-                    label="Activity Name"
-                    outlined
-                    dense
-                  />
-                  <v-text-field
-                    v-model="duration"
-                    label="Duration"
-                    outlined
-                    dense
-                    class="mt-3"
-                  />
-                </v-col>
-
-                <v-col cols="12" md="6">
-                  <v-textarea
-                    v-model="activity_description"
-                    label="Activity Description"
-                    auto-grow
-                    outlined
-                    dense
-                    rows="5"
-                  />
-                </v-col>
-              </v-row>
-
-              <v-btn
-                color="green"
-                prepend-icon="mdi-plus"
-                elevation="0"
-                rounded
-                @click="addFarms"
-                :loading="loading"
-                :disabled="loading"
-              >
-                Add Farm
-              </v-btn>
-            </div>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <v-row class="mt-6" dense>
-        <v-col
-          v-for="(farm, index) in farms"
-          :key="index"
-          cols="12"
-          sm="6"
-          md="4"
-          lg="3"
-        >
-          <v-card elevation="4" class="pa-4">
-            <v-card-title class="text-h6 text-green-darken-3">
-              {{ farm.farm_name }}
-            </v-card-title>
-            <v-card-subtitle>
-              {{ farm.location }}
-            </v-card-subtitle>
-            <v-card-text>
-              <strong>Description:</strong>
-              <p>{{ farm.farm_description }}</p>
-              <strong>Activity:</strong>
-              <p>{{ farm.activity_name }} ({{ farm.duration }})</p>
-              <strong>Details:</strong>
-              <p>{{ farm.activity_description }}</p>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
-
-      <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">
-        {{ snackbarMessage }}
-      </v-snackbar>
-    </v-container>
+    <!-- Snackbar -->
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
+      {{ snackbar.message }}
+    </v-snackbar>
   </DashboardLayout>
 </template>
+
+<style scoped>
+.farm-card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.farm-card:hover {
+  transform: scale(1.05);
+}
+</style>

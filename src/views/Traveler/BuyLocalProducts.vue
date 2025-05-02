@@ -48,7 +48,10 @@ const placeOrder = async () => {
     dialog.value = false
   }
 }
-onMounted(fetchProducts)
+onMounted(async () => {
+  await fetchProducts()
+  console.log('Fetched products:', products.value)
+})
 </script>
 <template>
     <TravelerLayout>
@@ -60,7 +63,7 @@ onMounted(fetchProducts)
             <v-row class="mt-4" dense>
               <v-col
                 v-for="product in products"
-                :key="product.id"
+                :key="product.product_id"
                 cols="12"
                 sm="6"
                 md="3"
