@@ -16,6 +16,7 @@ const userData = ref({
   email: '',
   full_name: '',
   role: '',
+  avatar_url: '', 
 })
 
 const getLoggedStatus = async () => {
@@ -36,6 +37,7 @@ const getUser = async () => {
     userData.value.email = user.email
     userData.value.full_name = user.user_metadata?.full_name || ''
     userData.value.role = user.user_metadata?.role || 'Traveler'
+    userData.value.avatar_url = user.user_metadata?.avatar_url || '' 
     userData.value.initials = getAvatarText(user.user_metadata?.full_name || user.email)
   }
 }
@@ -169,9 +171,15 @@ onMounted(() => {
 
                         <v-card class="pa-4" width="250">
                             <div class="d-flex align-center mb-4">
-                            <v-avatar size="50" class="mr-3">
-                              {{ userData.initials || 'NN' }}
-                            </v-avatar>
+                              <v-avatar size="50" class="mr-3">
+                                <img
+                                  v-if="userData.avatar_url"
+                                  :src="userData.avatar_url"
+                                  alt="Avatar"
+                                  style="width: 100%; height: 100%; object-fit: cover"
+                                />
+                                <span v-else>{{ userData.initials || 'NN' }}</span>
+                              </v-avatar>
                             <div>
                               <div class="text-subtitle-3 font-weight-bold">{{ userData.full_name }}</div>
                               <div class="text-subtitle-2 font-weight-medium">{{ userData.role }}</div>
