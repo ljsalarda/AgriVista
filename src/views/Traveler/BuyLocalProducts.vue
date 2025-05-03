@@ -69,11 +69,9 @@ onMounted(async () => {
                 md="3"
               >
                 <v-card class="pa-2">
-                  <v-img
-                    :src="product.image_url || 'https://via.placeholder.com/150'"
-                    height="150px"
-                    class="rounded mb-2"
-                  />
+                  <v-carousel height="125" hide-delimiters show-arrows class="mb-2">
+                <v-carousel-item v-for="(image, i) in product.product_images" :key="i" :src="image" />
+              </v-carousel>
                   <div class="text-subtitle-1 font-weight-medium">{{ product.product_name }}</div>
                   <div class="text-caption mb-2">{{ product.category }}</div>
                   <div class="text-caption mb-2">Stock: {{ product.stock }}</div>
