@@ -38,9 +38,10 @@ const fetchFarms = async () => {
 
 const openBookingModal = (farm) => {
   selectedFarm.value = farm
-  visit.value = new Date().toISOString().slice(0, 16) 
+  visit.value = new Date().toISOString().slice(0, 16)
   dialog.value = true
 }
+
 
 const placeBooking = async () => {
   const { data: { user } } = await supabase.auth.getUser()
@@ -85,7 +86,14 @@ onMounted(() => {
               <v-row class="mt-4" dense>
                 <v-col cols="12" md="4" v-for="farm in farms" :key="farm.id">
                   <v-card>
-                    <v-img color="grey" height="180" src="" />
+                    <v-carousel v-if="farm.farm_images && farm.farm_images.length"
+                      height="125" hide-delimiters show-arrows class="mb-2">
+                      <v-carousel-item
+                        v-for="(img, i) in farm.farm_images"
+                        :key="i"
+                        :src="img"
+                      />
+                    </v-carousel>
                     <v-card-title>{{ farm.farm_name }}</v-card-title>
                     <v-card-subtitle>{{ farm.location }} </v-card-subtitle>
                     <v-card-subtitle>{{ farm.farm_description }} </v-card-subtitle>
@@ -101,16 +109,30 @@ onMounted(() => {
        <!-- Booking Modal -->
        <v-dialog v-model="dialog" max-width="640" transition="dialog-bottom-transition">
         <v-card class="rounded-xl elevation-10">
-          <v-img
-            :src="selectedFarm.image_url || 'https://via.placeholder.com/640x200?text=Farm+Image'"
-            height="200"
-            cover
-            class="rounded-t-xl"
-          />
+          <v-card-title class="text-h5 font-weight-bold px-6 pt-4">
+            Book a Visit
+          </v-card-title>
 
           <v-card-title class="text-h5 font-weight-bold px-6 pt-4">
             {{ selectedFarm.farm_name }}
           </v-card-title>
+          <v-card-title class="text-h5 font-weight-bold px-6 pt-4">
+          <v-carousel
+              v-if="selectedFarm.farm_images && selectedFarm.farm_images.length"
+              height="125"
+              hide-delimiters
+              show-arrows
+              class="mb-2"
+            >
+              <v-carousel-item
+                v-for="(img, i) in selectedFarm.farm_images"
+                :key="i"
+                :src="img"
+              />
+            </v-carousel>
+          </v-card-title>
+
+          <br>
 
           <v-card-subtitle class="px-6 text-grey-darken-1 mb-2">
             {{ selectedFarm.location }}
