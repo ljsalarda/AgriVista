@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { supabase } from '@/utils/supabase.js'
 import DashboardLayout from '@/components/DashboardLayout.vue'
 
@@ -16,8 +16,38 @@ const snackbar = reactive({
 const products = ref([])
 const isEditing = ref(false)
 const editingProduct = ref(null)
-const editDialog = ref(false) // <-- modal state
-const userId = ref(null) 
+const editDialog = ref(false) 
+const userId = ref(null)
+const productImages = ref([]) 
+const previewImages = ref([]) 
+
+watch(productImages, (files) => {
+  previewImages.value = []
+  for (const file of files) {
+    const reader = new FileReader()
+    reader.onload = () => {
+      previewImages.value.push(reader.result)
+    }
+    reader.readAsDataURL(file)
+  }
+})
+
+const uploadProductImages = async () => {
+  const urls = []
+
+  for (const file of productImages.value) {
+    const filePath = `product/${Date.now()}_${file.name}`
+    const { error } = await supabase.storage.from('images').upload(filePath, file)
+    if (error) {
+      console.error('Upload error:', error)
+      continue
+    }
+    const { data } = supabase.storage.from('images').getPublicUrl(filePath)
+    urls.push(data.publicUrl)
+  }
+
+  return urls
+}
 
 const fetchProducts = async () => {
   const { data: { user } } = await supabase.auth.getUser()
@@ -46,12 +76,15 @@ const addProduct = async () => {
     return
   }
 
+  const imageUrls = await uploadProductImages()
+
   const newProduct = {
     user_id: user.id,
     product_name: product_name.value,
     category: category.value,
     price: parseFloat(price.value),
     stock: stock.value,
+    product_images: imageUrls 
   }
 
   const { data, error } = await supabase
@@ -69,17 +102,17 @@ const addProduct = async () => {
     snackbar.message = 'Product added successfully!'
     snackbar.color = 'success'
     snackbar.show = true
-
     products.value.push(data)
 
     product_name.value = ''
     category.value = ''
     price.value = null
     stock.value = ''
+    productImages.value = []
+    previewImages.value = []
   }
 }
 
-// Edit modal logic
 function editProduct(product) {
   editingProduct.value = { ...product }
   editDialog.value = true
@@ -98,7 +131,7 @@ async function saveEditProduct() {
     return
   }
 
-  console.log('Updating product:', editingProduct.value);
+  const imageUrls = await uploadProductImages()
 
   const { data, error } = await supabase
     .from('Products')
@@ -107,6 +140,7 @@ async function saveEditProduct() {
       category: editingProduct.value.category,
       price: parseFloat(editingProduct.value.price),
       stock: editingProduct.value.stock,
+      product_images: imageUrls.length ? imageUrls : editingProduct.value.product_images // Use new images or keep old ones
     })
     .eq('product_id', editingProduct.value.product_id)
     .select()
@@ -117,7 +151,6 @@ async function saveEditProduct() {
     snackbar.color = 'error'
     snackbar.show = true
   } else {
-    // Update local list
     const idx = products.value.findIndex(p => p.product_id === editingProduct.value.product_id)
     if (idx !== -1) products.value[idx] = data
     snackbar.message = 'Product updated!'
@@ -128,13 +161,13 @@ async function saveEditProduct() {
 }
 
 async function deleteProduct(product_id) {
-  console.log("Deleting product with ID:", product_id);
+  console.log("Deleting product with ID:", product_id)
   const { error } = await supabase
     .from('Products')
     .delete()
     .eq('product_id', product_id)
   if (error) {
-    console.error('Error deleting product:', error);
+    console.error('Error deleting product:', error)
     snackbar.message = 'Failed to delete product.'
     snackbar.color = 'error'
     snackbar.show = true
@@ -151,6 +184,7 @@ onMounted(() => {
   fetchProducts()
 })
 </script>
+
 
 <template>
   <DashboardLayout>
@@ -177,20 +211,34 @@ onMounted(() => {
             <v-col cols="12" md="6">
               <v-text-field v-model="stock" label="Stock Availability" outlined />
             </v-col>
+            <v-col cols="12" md="6" class="d-flex flex-column align-center justify-center">
+              <v-file-input
+                v-model="productImages"
+                label="Upload Product Images"
+                multiple
+                show-size
+                accept="image/*"
+                prepend-icon="mdi-image"
+                outlined
+                class="mb-4"
+              />
+              <v-carousel v-if="previewImages && previewImages.length" hide-delimiters height="125" show-arrows class="mx-auto">
+                <v-carousel-item v-for="(image, i) in previewImages" :key="i" :src="image" />
+              </v-carousel>
+            </v-col>
           </v-row>
           <div class="d-flex justify-start mt-4 gap-4">
             <v-btn
               color="green"
               elevation="0"
               rounded
-              @click="isEditing ? saveProduct() : addProduct()"
+              @click="isEditing ? saveEditProduct() : addProduct()"
             >
               {{ isEditing ? 'Save' : 'Add' }}
             </v-btn>
           </div>
         </v-card>
 
-        <!-- Product Cards Section -->
         <v-row class="mt-6" dense>
           <v-col
             v-for="(product, index) in products"
@@ -201,6 +249,9 @@ onMounted(() => {
             lg="3"
           >
             <v-card class="pa-2 product-card" elevation="4" rounded="xl">
+              <v-carousel height="125" hide-delimiters show-arrows class="mb-2">
+                <v-carousel-item v-for="(image, i) in product.product_images" :key="i" :src="image" />
+              </v-carousel>
               <v-card-title class="text-h6">{{ product.product_name }}</v-card-title>
               <v-card-subtitle class="mb-2">{{ product.category }}</v-card-subtitle>
               <v-card-text>
@@ -209,14 +260,14 @@ onMounted(() => {
               </v-card-text>
               <v-card-actions>
                 <v-btn small color="blue" @click="editProduct(product)">Edit</v-btn>
-                <v-btn small color="red" @click="deleteProduct(product.product_id)">Delete</v-btn>              </v-card-actions>
+                <v-btn small color="red" @click="deleteProduct(product.product_id)">Delete</v-btn>
+              </v-card-actions>
             </v-card>
           </v-col>
         </v-row>
       </v-col>
     </v-row>
 
-    <!-- Edit Product Modal -->
     <v-dialog v-model="editDialog" max-width="500">
       <v-card>
         <v-card-title>Edit Product</v-card-title>
@@ -239,12 +290,12 @@ onMounted(() => {
       </v-card>
     </v-dialog>
 
-    <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
       {{ snackbar.message }}
     </v-snackbar>
   </DashboardLayout>
 </template>
+
 
 <style scoped>
 .gap-4 {

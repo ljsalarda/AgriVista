@@ -18,8 +18,10 @@ const userData = ref({
   role: '',
   address: '',
   contanctNo: '',
-  avatar_url: '',
+  avatar_url: ''
 })
+
+const imageUrl = ref('') // for previewing uploaded image
 
 const getUser = async () => {
   const { data: { user } } = await supabase.auth.getUser()
@@ -32,36 +34,49 @@ const getUser = async () => {
     userData.value.contanctNo = user.user_metadata?.contanctNo || ''
     userData.value.avatar_url = user.user_metadata?.avatar_url || ''
     userData.value.initials = getAvatarText(user.user_metadata?.full_name || user.email)
+
+    if (userData.value.avatar_url) {
+      imageUrl.value = userData.value.avatar_url
+    }
   }
 }
 
-const handleImageUpload = async () => {
+const handleFileChange = (e) => {
+  imageFile.value = e.target.files[0]
+}
+
+const uploadImage = async () => {
   if (!imageFile.value) return null
 
   const file = imageFile.value
-  const fileExt = file.name.split('.').pop()
-  const filePath = `avatars/${Date.now()}.${fileExt}`
+  const role = userData.value.role.toLowerCase()
+  const filePath = `${role}/${Date.now()}_${file.name}`
 
-  const { error } = await supabase.storage.from('avatars').upload(filePath, file)
+  const { error } = await supabase.storage
+    .from('images')
+    .upload(filePath, file)
+
   if (error) {
     alert('Upload failed!')
     console.error(error)
     return null
   }
 
-  const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
+  const { data } = supabase.storage.from('images').getPublicUrl(filePath)
+  imageUrl.value = data.publicUrl
   return data.publicUrl
 }
 
 const toggleEdit = async () => {
   if (isEditing.value) {
-    const imageUrl = await handleImageUpload()
+    const uploadedUrl = await uploadImage()
+
     const updatedUser = {
       full_name: userData.value.full_name,
       role: userData.value.role,
       address: userData.value.address,
       contanctNo: userData.value.contanctNo,
-      avatar_url: imageUrl || userData.value.avatar_url,
+      ...(uploadedUrl && { avatar_url: uploadedUrl }),
     }
 
     const { error } = await supabase.auth.updateUser({ data: updatedUser })
@@ -93,18 +108,18 @@ onMounted(() => {
         <v-card class="pa-6" elevation="2" rounded="lg">
           <div class="d-flex justify-start mb-4">
             <v-avatar size="100" color="grey" class="ms-6">
-              <img v-if="userData.avatar_url" :src="userData.avatar_url" />
+              <img v-if="imageUrl" :src="imageUrl" alt="User Avatar"  style="width: 100%; height: 100%; object-fit: cover"/>
               <span v-else class="white--text text-h5">{{ userData.initials }}</span>
             </v-avatar>
             <div class="ms-4">
-              <h5 class="mb-4">{{ userData.role }}</h5>
               <input
                 class="ms-3"
                 type="file"
                 accept="image/*"
                 :disabled="!isEditing"
-                @change="e => imageFile.value = e.target.files[0]"
+                @change="handleFileChange"
               />
+              
             </div>
           </div>
 
@@ -143,7 +158,6 @@ onMounted(() => {
     </v-row>
   </DashboardLayout>
 </template>
-
 
 <style scoped>
 </style>
