@@ -109,7 +109,7 @@ async function saveEditFarm() {
       duration: editingFarm.value.duration,
       activity_description: editingFarm.value.activity_description,
     })
-    .eq('id', editingFarm.value.id)
+    .eq('farm_id', editingFarm.value.farm_id)  // Use 'farm_id' instead of 'id'
     .select()
     .single()
 
@@ -119,7 +119,7 @@ async function saveEditFarm() {
     snackbar.show = true
   } else {
     // Update local list
-    const idx = farms.value.findIndex(f => f.id === editingFarm.value.id)
+    const idx = farms.value.findIndex(f => f.farm_id === editingFarm.value.farm_id)  // Use 'farm_id' instead of 'id'
     if (idx !== -1) farms.value[idx] = data
     snackbar.message = 'Farm updated!'
     snackbar.color = 'success'
@@ -129,10 +129,17 @@ async function saveEditFarm() {
 }
 
 async function deleteFarm(id) {
+  if (!id) {
+    snackbar.message = 'Invalid farm ID.'
+    snackbar.color = 'error'
+    snackbar.show = true
+    return
+  }
+
   const { error } = await supabase
     .from('Farms')
     .delete()
-    .eq('id', id)
+    .eq('farm_id', id)
 
   if (error) {
     console.error('Error deleting farm:', error)
@@ -140,13 +147,15 @@ async function deleteFarm(id) {
     snackbar.color = 'error'
     snackbar.show = true
   } else {
-    const idx = farms.value.findIndex(f => f.id === id)
+    const idx = farms.value.findIndex(f => f.farm_id === id)
     if (idx !== -1) farms.value.splice(idx, 1)
     snackbar.message = 'Farm deleted!'
     snackbar.color = 'success'
     snackbar.show = true
   }
 }
+
+
 
 onMounted(() => {
   fetchFarms()
@@ -206,7 +215,7 @@ onMounted(() => {
               </v-card-text>
               <v-card-actions>
                 <v-btn small color="blue" @click="editFarm(farm)">Edit</v-btn>
-                <v-btn small color="red" @click="deleteFarm(farm.id)">Delete</v-btn>
+                <v-btn small color="red" @click="deleteFarm(farm.farm_id)">Delete</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
@@ -216,23 +225,24 @@ onMounted(() => {
 
     <!-- Edit Farm Modal -->
     <v-dialog v-model="editDialog" max-width="500">
-      <v-card>
-        <v-card-title>Edit Farm</v-card-title>
-        <v-card-text>
-          <v-text-field v-model="editingFarm.farm_name" label="Farm Name" outlined />
-          <v-text-field v-model="editingFarm.location" label="Location" outlined />
-          <v-textarea v-model="editingFarm.farm_description" label="Farm Description" outlined rows="4" />
-          <v-text-field v-model="editingFarm.activity_name" label="Activity Name" outlined />
-          <v-text-field v-model="editingFarm.duration" label="Duration" outlined />
-          <v-textarea v-model="editingFarm.activity_description" label="Activity Description" outlined rows="5" />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="grey" text @click="editDialog = false">Cancel</v-btn>
-          <v-btn color="green" @click="saveEditFarm">Save</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+  <v-card>
+    <v-card-title>Edit Farm</v-card-title>
+    <v-card-text>
+      <v-text-field v-model="editingFarm.farm_name" label="Farm Name" outlined />
+      <v-text-field v-model="editingFarm.location" label="Location" outlined />
+      <v-textarea v-model="editingFarm.farm_description" label="Farm Description" outlined rows="4" />
+      <v-text-field v-model="editingFarm.activity_name" label="Activity Name" outlined />
+      <v-text-field v-model="editingFarm.duration" label="Duration" outlined />
+      <v-textarea v-model="editingFarm.activity_description" label="Activity Description" outlined rows="5" />
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer />
+      <v-btn color="grey" text @click="editDialog = false">Cancel</v-btn>
+      <v-btn color="green" @click="saveEditFarm">Save</v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+
 
     <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
