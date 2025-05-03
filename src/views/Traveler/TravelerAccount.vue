@@ -94,53 +94,131 @@ onMounted(getTraveler)
 
 <template>
   <TravelerLayout>
-    <v-row>
-      <v-col cols="12" class="px-6 pt-2">
-        <h2 class="text-h6 font-weight-bold mb-4">Account Information</h2>
+    <v-container fluid class="pa-4">
+      <v-row justify="center">
+        <v-col cols="12" md="10" lg="8">
+          <h2 class="text-h5 font-weight-bold mb-6 text-center">👤 Profile Settings</h2>
 
-        <v-card class="pa-6" elevation="2" rounded="lg">
-          <div class="d-flex justify-start mb-4">
-            <v-avatar size="100" color="grey" class="ms-6">
-              <img v-if="imageUrl" :src="imageUrl" alt="User Avatar" style="width: 100%; height: 100%; object-fit: cover"/>
-              <span v-else class="white--text text-h5">{{ travelerData.initials }}</span>
-            </v-avatar>
-            <div class="ms-4">
-              <input
-                class="ms-3"
-                type="file"
-                accept="image/*"
-                :disabled="!isEditing"
-                @change="handleFileChange"
-              />
+          <v-card class="pa-6 rounded-xl" elevation="1" style="border: 1px solid #e5e5e5;">
+            <!-- Avatar Section -->
+            <div class="d-flex align-center mb-6">
+              <v-avatar size="96" class="elevation-1" style="border: 3px solid #ccc;">
+                <img
+                  v-if="imageUrl"
+                  :src="imageUrl"
+                  alt="Avatar"
+                  class="rounded-circle"
+                  style="width: 100%; height: 100%; object-fit: cover"
+                  
+                />
+                <v-icon v-else size="64" color="grey">mdi-account</v-icon>
+              </v-avatar>
+
+              <div class="ms-4">
+                <div class="text-subtitle-1 font-weight-medium mb-2">{{ travelerData.full_name || 'Your Name' }}</div>
+                <v-btn
+                  v-if="isEditing"
+                  variant="text"
+                  color="primary"
+                  class="text-capitalize px-0"
+                  @click="$refs.fileInput.click()"
+                >
+                  Change Photo
+                </v-btn>
+                <input
+                  ref="fileInput"
+                  type="file"
+                  accept="image/*"
+                  class="d-none"
+                  @change="handleFileChange"
+                />
+              </div>
             </div>
-          </div>
 
-          <v-row dense>
-            <v-col cols="12" md="6">
-              <v-text-field label="Full Name" outlined v-model="travelerData.full_name" :disabled="!isEditing" />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field label="Address" outlined v-model="travelerData.address" :disabled="!isEditing" />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field label="Email" outlined v-model="travelerData.email" disabled append-inner-icon="mdi-check-circle" color="success" />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field label="Contact No." outlined v-model="travelerData.contactNo" :disabled="!isEditing" />
-            </v-col>
-            <v-col cols="12" md="6">
-              <v-text-field label="Birthday" type="date" outlined v-model="travelerData.date" :disabled="!isEditing" />
-            </v-col>
-          </v-row>
+            <!-- Form Fields -->
+            <v-divider class="mb-6"></v-divider>
+            <v-row dense>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  label="Full Name"
+                  v-model="travelerData.full_name"
+                  :disabled="!isEditing"
+                  variant="plain"
+                  hide-details
+                  class="modern-field"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  label="Address"
+                  v-model="travelerData.address"
+                  :disabled="!isEditing"
+                  variant="plain"
+                  hide-details
+                  class="modern-field"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  label="Email"
+                  v-model="travelerData.email"
+                  disabled
+                  append-inner-icon="mdi-check-circle"
+                  color="success"
+                  variant="plain"
+                  hide-details
+                  class="modern-field"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  label="Contact No."
+                  v-model="travelerData.contactNo"
+                  :disabled="!isEditing"
+                  variant="plain"
+                  hide-details
+                  class="modern-field"
+                />
+              </v-col>
+              <v-col cols="12" md="6">
+                <v-text-field
+                  label="Birthday"
+                  type="date"
+                  v-model="travelerData.date"
+                  :disabled="!isEditing"
+                  variant="plain"
+                  hide-details
+                  class="modern-field"
+                />
+              </v-col>
+            </v-row>
 
-          <v-btn class="mt-4" color="primary" @click="toggleEdit">
-            {{ isEditing ? 'Save' : 'Edit' }}
-          </v-btn>
-        </v-card>
-      </v-col>
-    </v-row>
+            <!-- Action -->
+            <v-divider class="mt-6 mb-4"></v-divider>
+            <div class="d-flex justify-end">
+              <v-btn
+                variant="flat"
+                color="primary"
+                class="text-capitalize"
+                @click="toggleEdit"
+              >
+                {{ isEditing ? 'Save Changes' : 'Edit Profile' }}
+              </v-btn>
+            </div>
+          </v-card>
+        </v-col>
+      </v-row>
+    </v-container>
   </TravelerLayout>
 </template>
 
 <style scoped>
+.modern-field input {
+  font-size: 16px;
+  padding-left: 0;
+  border-bottom: 1px solid #ddd !important;
+}
+.modern-field label {
+  color: #888;
+}
 </style>

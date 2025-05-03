@@ -190,12 +190,12 @@ onMounted(() => {
   <DashboardLayout>
     <v-row>
       <v-col cols="12" class="px-6 pt-2">
-        <h2 class="text-h6 font-weight-bold mb-4">Products</h2>
+        <h2 class="text-h5 font-weight-bold mb-6 text-center text-green-darken-3">🌿 Products</h2>
 
-        <v-card class="pa-6" elevation="2" rounded="lg">
+        <v-card class="pa-6 bg-gradient-to-r from-teal-100 via-cyan-200 to-blue-200 shadow-xl transition-all rounded-lg" elevation="8">
           <v-row dense>
             <v-col cols="12" md="6">
-              <v-text-field v-model="product_name" label="Product Name" outlined />
+              <v-text-field v-model="product_name" label="Product Name" outlined dense class="mb-4 rounded-lg" :style="{ background: 'rgba(255, 255, 255, 0.7)' }" />
             </v-col>
             <v-col cols="12" md="6">
               <v-select
@@ -203,13 +203,16 @@ onMounted(() => {
                 :items="['Fruits', 'Vegetables', 'Herbs', 'Others']"
                 label="Category"
                 outlined
+                dense
+                class="mb-4 rounded-lg"
+                :style="{ background: 'rgba(255, 255, 255, 0.7)' }"
               />
             </v-col>
             <v-col cols="12" md="6">
-              <v-text-field v-model="price" label="Price" type="number" outlined />
+              <v-text-field v-model="price" label="Price" type="number" outlined dense class="mb-4 rounded-lg" :style="{ background: 'rgba(255, 255, 255, 0.7)' }" />
             </v-col>
             <v-col cols="12" md="6">
-              <v-text-field v-model="stock" label="Stock Availability" outlined />
+              <v-text-field v-model="stock" label="Stock Availability" outlined dense class="mb-4 rounded-lg" :style="{ background: 'rgba(255, 255, 255, 0.7)' }" />
             </v-col>
             <v-col cols="12" md="6" class="d-flex flex-column align-center justify-center">
               <v-file-input
@@ -220,25 +223,29 @@ onMounted(() => {
                 accept="image/*"
                 prepend-icon="mdi-image"
                 outlined
-                class="mb-4"
+                dense
+                class="mb-6 rounded-lg"
               />
-              <v-carousel v-if="previewImages && previewImages.length" hide-delimiters height="125" show-arrows class="mx-auto">
+              <v-carousel v-if="previewImages && previewImages.length" hide-delimiters height="150" show-arrows class="mx-auto transition-all rounded-lg overflow-hidden">
                 <v-carousel-item v-for="(image, i) in previewImages" :key="i" :src="image" />
               </v-carousel>
             </v-col>
           </v-row>
-          <div class="d-flex justify-start mt-4 gap-4">
+
+          <div class="d-flex justify-start mt-4 gap-6">
             <v-btn
-              color="green"
-              elevation="0"
+              color="success"
+              elevation="2"
               rounded
               @click="isEditing ? saveEditProduct() : addProduct()"
+              class="transition-all transform hover:scale-105 hover:bg-green-600"
             >
               {{ isEditing ? 'Save' : 'Add' }}
             </v-btn>
           </div>
         </v-card>
 
+        <!-- Product Cards Section -->
         <v-row class="mt-6" dense>
           <v-col
             v-for="(product, index) in products"
@@ -248,17 +255,17 @@ onMounted(() => {
             md="4"
             lg="3"
           >
-            <v-card class="pa-2 product-card" elevation="4" rounded="xl">
-              <v-carousel height="125" hide-delimiters show-arrows class="mb-2">
+            <v-card class="pa-4 product-card shadow-lg transition-transform rounded-xl hover:scale-105" elevation="6">
+              <v-carousel height="150" hide-delimiters show-arrows class="mb-2 rounded-xl overflow-hidden">
                 <v-carousel-item v-for="(image, i) in product.product_images" :key="i" :src="image" />
               </v-carousel>
-              <v-card-title class="text-h6">{{ product.product_name }}</v-card-title>
-              <v-card-subtitle class="mb-2">{{ product.category }}</v-card-subtitle>
+              <v-card-title class="text-h6 font-weight-bold text-center">{{ product.product_name }}</v-card-title>
+              <v-card-subtitle class="text-center mb-2">{{ product.category }}</v-card-subtitle>
               <v-card-text>
                 <div><strong>Price:</strong> ₱{{ product.price }}</div>
                 <div><strong>Stock:</strong> {{ product.stock }}</div>
               </v-card-text>
-              <v-card-actions>
+              <v-card-actions class="justify-center">
                 <v-btn small color="blue" @click="editProduct(product)">Edit</v-btn>
                 <v-btn small color="red" @click="deleteProduct(product.product_id)">Delete</v-btn>
               </v-card-actions>
@@ -268,44 +275,65 @@ onMounted(() => {
       </v-col>
     </v-row>
 
+    <!-- Edit Product Modal -->
     <v-dialog v-model="editDialog" max-width="500">
       <v-card>
         <v-card-title>Edit Product</v-card-title>
         <v-card-text>
-          <v-text-field v-model="editingProduct.product_name" label="Product Name" outlined />
+          <v-text-field v-model="editingProduct.product_name" label="Product Name" outlined dense class="mb-4" />
           <v-select
             v-model="editingProduct.category"
             :items="['Fruits', 'Vegetables', 'Herbs', 'Others']"
             label="Category"
             outlined
+            dense
+            class="mb-4"
           />
-          <v-text-field v-model="editingProduct.price" label="Price" type="number" outlined />
-          <v-text-field v-model="editingProduct.stock" label="Stock Availability" outlined />
+          <v-text-field v-model="editingProduct.price" label="Price" type="number" outlined dense class="mb-4" />
+          <v-text-field v-model="editingProduct.stock" label="Stock Availability" outlined dense class="mb-4" />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn color="grey" text @click="editDialog = false">Cancel</v-btn>
-          <v-btn color="green" @click="saveEditProduct">Save</v-btn>
+          <v-btn color="success" @click="saveEditProduct">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
+    <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
       {{ snackbar.message }}
     </v-snackbar>
   </DashboardLayout>
 </template>
 
-
 <style scoped>
-.gap-4 {
-  gap: 1rem;
+.gap-6 {
+  gap: 1.5rem;
 }
+
 .product-card {
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.3s ease;
 }
 
 .product-card:hover {
   transform: scale(1.05);
+}
+
+.v-card {
+  border-radius: 15px;
+}
+
+.v-btn {
+  transition: all 0.3s ease;
+}
+
+.v-btn:hover {
+  transform: scale(1.1);
+}
+
+.v-card-title {
+  font-weight: bold;
+  font-size: 1.1rem;
 }
 </style>

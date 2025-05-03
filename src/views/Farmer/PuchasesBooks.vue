@@ -114,19 +114,21 @@ onMounted(() => {
   <DashboardLayout>
     <v-row>
       <v-col cols="12" class="px-6 pt-2">
-        <h2 class="font-weight-bold text-h4 mb-2">Purchases & Bookings</h2>
+        <h2 class="text-h5 font-weight-bold mb-6 text-center text-green-darken-3">📋 Purchases & Bookings</h2>
 
-        <v-card>
-          <v-tabs v-model="tab" align-tabs="start" color="green">
-            <v-tab value="purchased">Purchased Products</v-tab>
-            <v-tab value="bookings">Farm Bookings</v-tab>
+        <v-card class="rounded-xl elevation-3 pa-4">
+          <v-tabs v-model="tab" align-tabs="start" color="green-darken-2" grow>
+            <v-tab value="purchased">🛒 Ordered Products</v-tab>
+            <v-tab value="bookings">📅 Farm Bookings</v-tab>
           </v-tabs>
+
+          <v-divider class="my-2" />
 
           <v-card-text>
             <v-tabs-window v-model="tab">
               <!-- Purchased Products Tab -->
               <v-tabs-window-item value="purchased">
-                <v-table>
+                <v-table density="comfortable" class="rounded-lg">
                   <thead>
                     <tr>
                       <th>Buyer</th>
@@ -135,7 +137,7 @@ onMounted(() => {
                       <th>Quantity</th>
                       <th>Total Price</th>
                       <th>Status</th>
-                      <th>Actions</th>  <!-- Added actions column -->
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -145,7 +147,11 @@ onMounted(() => {
                       <td>{{ order.product_name }}</td>
                       <td>{{ order.quantity }}</td>
                       <td>₱ {{ order.total_price }}</td>
-                      <td>{{ order.status }}</td>
+                      <td>
+                        <v-chip :color="order.status === 'Pending' ? 'orange' : 'grey'" text-color="white" small>
+                          {{ order.status }}
+                        </v-chip>
+                      </td>
                       <td>
                         <v-btn icon class="mr-1" color="green" size="x-small" @click="updateOrderStatus(order.order_id)">
                           <v-icon size="16">mdi-check</v-icon>
@@ -154,14 +160,17 @@ onMounted(() => {
                     </tr>
                   </tbody>
                 </v-table>
-                <v-btn color="green" class="mt-4 text-white"  to="/PBhistory">
-                  View Full Sales History
-                </v-btn>
+
+                <div class="mt-4">
+                  <v-btn color="green" rounded class="text-white" to="/PBhistory">
+                    View Full Sales History
+                  </v-btn>
+                </div>
               </v-tabs-window-item>
 
               <!-- Farm Bookings Tab -->
               <v-tabs-window-item value="bookings">
-                <v-table>
+                <v-table density="comfortable" class="rounded-lg">
                   <thead>
                     <tr>
                       <th>Guest</th>
@@ -169,7 +178,7 @@ onMounted(() => {
                       <th>Farm</th>
                       <th>Booking Date</th>
                       <th>Status</th>
-                      <th>Actions</th> <!-- Added actions column -->
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -178,7 +187,11 @@ onMounted(() => {
                       <td>{{ booking.guest_contact }}</td>
                       <td>{{ booking.farm_name }}</td>
                       <td>{{ booking.booking_date }}</td>
-                      <td>{{ booking.status }}</td>
+                      <td>
+                        <v-chip :color="booking.status === 'Reservation' ? 'green' : 'grey'" text-color="white" small>
+                          {{ booking.status }}
+                        </v-chip>
+                      </td>
                       <td>
                         <v-btn icon class="mr-1" color="green" size="x-small" @click="updateBookingStatus(booking.booking_id)">
                           <v-icon size="16">mdi-check</v-icon>
@@ -187,9 +200,12 @@ onMounted(() => {
                     </tr>
                   </tbody>
                 </v-table>
-                <v-btn color="green" class="mt-4 text-white" to="/PBhistory">
-                  View Full Bookings
-                </v-btn>
+
+                <div class="mt-4">
+                  <v-btn color="green" rounded class="text-white" to="/PBhistory">
+                    View Full Bookings
+                  </v-btn>
+                </div>
               </v-tabs-window-item>
             </v-tabs-window>
           </v-card-text>
@@ -198,6 +214,7 @@ onMounted(() => {
     </v-row>
   </DashboardLayout>
 </template>
+
 
 <style scoped>
 .gap-4 {
