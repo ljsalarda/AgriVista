@@ -115,7 +115,7 @@ const registerTraveler = async () => {
 
               <v-col cols="12" md="7" class="d-none d-md-block">
                 <v-img
-                  src="/public/images/bg2.jpg"
+                  src="/images/bg2.jpg"
                   class="h-100"
                   cover
                   style="border-radius: 20px"
