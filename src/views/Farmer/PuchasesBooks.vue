@@ -126,7 +126,6 @@ onMounted(() => {
 
           <v-card-text>
             <v-tabs-window v-model="tab">
-              <!-- Purchased Products Tab -->
               <v-tabs-window-item value="purchased">
                 <v-table density="comfortable" class="rounded-lg">
                   <thead>
@@ -167,8 +166,6 @@ onMounted(() => {
                   </v-btn>
                 </div>
               </v-tabs-window-item>
-
-              <!-- Farm Bookings Tab -->
               <v-tabs-window-item value="bookings">
                 <v-table density="comfortable" class="rounded-lg">
                   <thead>

@@ -62,20 +62,17 @@ onMounted(() => {
   getLoggedStatus()
 })
 
-// Highlight active path
 const isActive = (path) => computed(() => route.path === path)
 </script>
 
 
 <template>
   <v-app>
-    <!-- App Bar -->
     <v-app-bar app elevation="2" color="white" class="d-md-none">
       <v-app-bar-nav-icon @click="drawerOpen = !drawerOpen" />
       <v-toolbar-title class="font-weight-bold text-grey-darken-3">AgriVista</v-toolbar-title>
     </v-app-bar>
 
-    <!-- Mobile Drawer -->
     <v-navigation-drawer
       v-model="drawerOpen"
       temporary
@@ -136,10 +133,8 @@ const isActive = (path) => computed(() => route.path === path)
       </div>
     </v-navigation-drawer>
 
-    <!-- Main Layout -->
     <v-container fluid class="pa-0">
       <v-row no-gutters>
-        <!-- Sidebar for Desktop -->
         <v-col
           cols="3"
           class="d-none d-md-flex flex-column justify-space-between"
@@ -198,37 +193,19 @@ const isActive = (path) => computed(() => route.path === path)
           </div>
         </v-col>
 
-        <!-- Main Content -->
         <v-col cols="12" md="9">
           <v-main class="pa-0 mt-0 mt-md-0 mt-10">
             <v-container fluid>
               <div class="d-flex justify-space-between align-center py-5">
-                <div>
+                <div class="ml-6">
                   <h2 class="text-h5 font-weight-bold text-green-darken-2 mb-1">👨‍🌾 Hello, Traveler</h2>
                   <p class="text-subtitle-1 text-grey-darken-1">Let's Explore Together</p>
                 </div>
 
                 <div class="d-flex align-center">
-                  <!-- Notifications -->
                   <v-menu offset-y transition="scale-transition">
                     <template #activator="{ props }">
-                      <v-btn icon v-bind="props" class="mr-4">
-                        <v-icon color="grey-darken-1">mdi-bell</v-icon>
-                      </v-btn>
-                    </template>
-                    <v-card class="pa-3" width="300" elevation="4">
-                      <p class="text-subtitle-2 font-weight-medium mb-2">Notifications</p>
-                      <p class="text-caption text-grey-darken-1">
-                        <v-icon size="16" color="blue-darken-2">mdi-information-outline</v-icon>
-                        You have no new notifications.
-                      </p>
-                    </v-card>
-                  </v-menu>
-
-                  <!-- Settings Menu -->
-                  <v-menu offset-y transition="scale-transition">
-                    <template #activator="{ props }">
-                      <v-btn icon v-bind="props">
+                      <v-btn class="mr-6" icon v-bind="props">
                         <v-icon color="grey-darken-1">mdi-cog</v-icon>
                       </v-btn>
                     </template>
@@ -267,7 +244,6 @@ const isActive = (path) => computed(() => route.path === path)
                 </div>
               </div>
 
-              <!-- Slot Content -->
               <slot />
             </v-container>
           </v-main>

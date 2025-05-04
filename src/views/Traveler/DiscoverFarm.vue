@@ -112,8 +112,6 @@ onMounted(() => {
         </v-col>
       </v-row>
     </v-container>
-
-    <!-- Booking Modal -->
     <v-dialog v-model="dialog" max-width="700" transition="dialog-bottom-transition">
       <v-card class="rounded-xl elevation-10">
         <v-card-title class="text-h5 font-weight-bold px-6 pt-4">

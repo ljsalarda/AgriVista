@@ -52,22 +52,8 @@ const registerTraveler = async () => {
               <v-col cols="12" md="5" class="pa-3 d-flex flex-column justify-center">
                 <v-img class="mx-auto mb-2" src="/images/AgriVistaLogo.png" width="100" />
                 <h2 class="text-h6 font-weight-bold mb-2">
-                  List your farm and reach more visitors
+                  Start your perfect farm trip!
                 </h2>
-
-                <div class="d-flex justify-center my-2">
-                  <v-btn icon class="mx-1" variant="outlined" size="small">
-                    <v-icon>mdi-facebook</v-icon>
-                  </v-btn>
-                  <v-btn icon class="mx-1" variant="outlined" size="small">
-                    <v-icon>mdi-google</v-icon>
-                  </v-btn>
-                  <v-btn icon class="mx-1" variant="outlined" size="small">
-                    <v-icon>mdi-apple</v-icon>
-                  </v-btn>
-                </div>
-
-                <p class="text-caption text-grey-darken-1 mb-2">or</p>
 
                 <v-form fast-fail @submit.prevent="registerTraveler">
                   <v-text-field

@@ -80,7 +80,6 @@ const deleteOrderStatus = async (order_id) => {
   if (error) {
     console.error('Error deleting order:', error)
   } else {
-    // Remove it from the local orders list
     orders.value = orders.value.filter(order => order.order_id !== order_id)
     console.log('Order deleted successfully')
   }
@@ -94,7 +93,6 @@ const deleteBookingStatus = async (booking_id) => {
   if (error) {
     console.error('Error deleting booking:', error)
   } else {
-    // Remove it from the local bookings list
     bookings.value = bookings.value.filter(booking => booking.booking_id !== booking_id)
     console.log('Booking deleted successfully')
   }
@@ -124,7 +122,6 @@ onMounted(() => {
 
           <v-card-text>
             <v-tabs-window v-model="tab">
-              <!-- Purchased Products Tab -->
               <v-tabs-window-item value="purchased">
                 <v-table density="comfortable" class="rounded-lg">
                   <thead>
@@ -162,8 +159,6 @@ onMounted(() => {
                   Back to Purchases & Bookings
                 </v-btn>
               </v-tabs-window-item>
-
-              <!-- Farm Bookings Tab -->
               <v-tabs-window-item value="bookings">
                 <v-table>
                   <thead>

@@ -21,7 +21,7 @@ const userData = ref({
   avatar_url: ''
 })
 
-const imageUrl = ref('') // for previewing uploaded image
+const imageUrl = ref('')
 
 const getUser = async () => {
   const { data: { user } } = await supabase.auth.getUser()
@@ -106,7 +106,6 @@ onMounted(() => {
         <h2 class="text-h5 font-weight-bold mb-6 text-center text-green-darken-3">Account Information</h2>
 
         <v-card class="pa-6 rounded-xl" elevation="1" style="border: 1px solid #e5e5e5;">
-          <!-- Avatar Section -->
           <div class="d-flex align-center mb-6">
             <v-avatar size="96" class="elevation-1" style="border: 3px solid #ccc;">
               <img v-if="imageUrl" :src="imageUrl" alt="User Avatar" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover"/>
@@ -134,7 +133,6 @@ onMounted(() => {
             </div>
           </div>
 
-          <!-- Form Fields -->
           <v-divider class="mb-6"></v-divider>
           <v-row dense>
             <v-col cols="12" md="6">
@@ -180,8 +178,6 @@ onMounted(() => {
               />
             </v-col>
           </v-row>
-
-          <!-- Action -->
           <v-divider class="mt-6 mb-4"></v-divider>
           <div class="d-flex justify-end">
             <v-btn
