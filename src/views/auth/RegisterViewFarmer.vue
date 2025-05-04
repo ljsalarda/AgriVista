@@ -53,15 +53,6 @@ const registerFarmer = async () => {
                   <v-img class="mx-auto mb-2" src="/images/AgriVistaLogo.png" width="100"></v-img>
                   <h2 class="text-h6 font-weight-bold mb-2">List your farm and reach more visitors</h2>
   
-                
-                  <div class="d-flex justify-center my-2">
-                    <v-btn icon class="mx-1" variant="outlined" size="small"><v-icon>mdi-facebook</v-icon></v-btn>
-                    <v-btn icon class="mx-1" variant="outlined" size="small"><v-icon>mdi-google</v-icon></v-btn>
-                    <v-btn icon class="mx-1" variant="outlined" size="small"><v-icon>mdi-apple</v-icon></v-btn>
-                  </div>
-  
-                  <p class="text-caption text-grey-darken-1 mb-2">or</p>
-  
                   
                   <v-form fast-fail @submit.prevent="registerFarmer">
                     <v-text-field
@@ -99,7 +90,7 @@ const registerFarmer = async () => {
                 </v-col>
   
                 <v-col cols="12" md="7" class="d-none d-md-block">
-                  <v-img src="/src/assets/bg2.jpg" class="h-100" cover style="border-radius: 20px;"></v-img>
+                  <v-img src="/images/bg2.jpg" class="h-100" cover style="border-radius: 20px;"></v-img>
                 </v-col>
               </v-row>
             </v-card>

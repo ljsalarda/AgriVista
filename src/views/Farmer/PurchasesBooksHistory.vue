@@ -80,7 +80,6 @@ const deleteOrderStatus = async (order_id) => {
   if (error) {
     console.error('Error deleting order:', error)
   } else {
-    // Remove it from the local orders list
     orders.value = orders.value.filter(order => order.order_id !== order_id)
     console.log('Order deleted successfully')
   }
@@ -94,7 +93,6 @@ const deleteBookingStatus = async (booking_id) => {
   if (error) {
     console.error('Error deleting booking:', error)
   } else {
-    // Remove it from the local bookings list
     bookings.value = bookings.value.filter(booking => booking.booking_id !== booking_id)
     console.log('Booking deleted successfully')
   }
@@ -112,19 +110,20 @@ onMounted(() => {
   <DashboardLayout>
     <v-row>
       <v-col cols="12" class="px-6 pt-2">
-        <h2 class="font-weight-bold text-h4 mb-2">Purchases & Bookings Histories</h2>
+        <h2 class="text-h5 font-weight-bold mb-6 text-center text-green-darken-3">📋 Purchases & Bookings Histories</h2>
 
-        <v-card>
-          <v-tabs v-model="tab" align-tabs="start" color="green">
-            <v-tab value="purchased">Purchased Products</v-tab>
-            <v-tab value="bookings">Farm Bookings</v-tab>
+        <v-card class="rounded-xl elevation-3 pa-4">
+          <v-tabs v-model="tab" align-tabs="start" color="green-darken-2" grow>
+            <v-tab value="purchased">🛒 Purchased Products</v-tab>
+            <v-tab value="bookings">📅 Farm Bookings</v-tab>
           </v-tabs>
+
+          <v-divider class="my-2" />
 
           <v-card-text>
             <v-tabs-window v-model="tab">
-              <!-- Purchased Products Tab -->
               <v-tabs-window-item value="purchased">
-                <v-table>
+                <v-table density="comfortable" class="rounded-lg">
                   <thead>
                     <tr>
                       <th>Buyer</th>
@@ -133,7 +132,7 @@ onMounted(() => {
                       <th>Quantity</th>
                       <th>Total Price</th>
                       <th>Status</th>
-                      <th>Actions</th>  <!-- Added actions column -->
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -143,9 +142,13 @@ onMounted(() => {
                       <td>{{ order.product_name }}</td>
                       <td>{{ order.quantity }}</td>
                       <td>₱ {{ order.total_price }}</td>
-                      <td>{{ order.status }}</td>
                       <td>
-                        <v-btn icon class="mr-1" color="green" size="x-small" @click="deleteOrderStatus(order.order_id)">
+                        <v-chip :color="order.status === 'Received' ? 'green' : 'grey'" text-color="white" small>
+                          {{ order.status }}
+                        </v-chip>
+                      </td>
+                      <td>
+                        <v-btn icon class="mr-1" color="red" size="x-small" @click="deleteOrderStatus(order.order_id)">
                           <v-icon size="16">mdi-delete</v-icon>
                         </v-btn>
                       </td>
@@ -156,8 +159,6 @@ onMounted(() => {
                   Back to Purchases & Bookings
                 </v-btn>
               </v-tabs-window-item>
-
-              <!-- Farm Bookings Tab -->
               <v-tabs-window-item value="bookings">
                 <v-table>
                   <thead>
@@ -167,7 +168,7 @@ onMounted(() => {
                       <th>Farm</th>
                       <th>Booking Date</th>
                       <th>Status</th>
-                      <th>Actions</th> <!-- Added actions column -->
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -176,10 +177,13 @@ onMounted(() => {
                       <td>{{ booking.guest_contact }}</td>
                       <td>{{ booking.farm_name }}</td>
                       <td>{{ booking.booking_date }}</td>
-                      <td>{{ booking.status }}</td>
                       <td>
-                        <v-btn icon class="mr-1" color="green" size="x-small" @click="deleteBookingStatus(booking.booking_id)">
-
+                        <v-chip :color="booking.status === 'On Site' ? 'green' : 'grey'" text-color="white" small>
+                          {{ booking.status }}
+                        </v-chip>
+                      </td>
+                      <td>
+                        <v-btn icon class="mr-1" color="red" size="x-small" @click="deleteBookingStatus(booking.booking_id)">
                           <v-icon size="16">mdi-delete</v-icon>
                         </v-btn>
                       </td>

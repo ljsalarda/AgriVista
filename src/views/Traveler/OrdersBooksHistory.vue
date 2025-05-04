@@ -63,19 +63,20 @@ onMounted(() => {
   <TravelerLayout>
     <v-row>
       <v-col cols="12" class="px-6 pt-2">
-        <h2 class="text-h6 font-weight-bold mb-4">Explore Farms</h2>
+        <h2 class="text-h5 font-weight-bold mb-6 text-center">🕘 History of Orders & 🧑‍🌾 Visited Farms</h2>
 
-        <v-card>
-          <v-tabs v-model="tab" align-tabs="start" color="green">
-            <v-tab value="purchased">Ordered Products</v-tab>
-            <v-tab value="bookings">Farm Booked</v-tab>
+        <v-card class="rounded-xl elevation-3 pa-4" style="height: 70vh;">
+          <v-tabs v-model="tab" align-tabs="start" color="green-darken-2" grow>
+            <v-tab value="purchased">🛒 Ordered Products</v-tab>
+            <v-tab value="bookings">📅 Farm Bookings</v-tab>
           </v-tabs>
 
-          <v-card-text>
+          <v-divider class="my-2" />
+
+          <v-card-text class="overflow-y-auto flex-grow-1 px-0">
             <v-tabs-window v-model="tab">
-              <!-- Orders Tab -->
               <v-tabs-window-item value="purchased">
-                <v-table>
+                <v-table density="comfortable">
                   <thead>
                     <tr>
                       <th>Product Name</th>
@@ -90,10 +91,18 @@ onMounted(() => {
                       <td>{{ order.Products?.product_name }}</td>
                       <td>{{ order.quantity }}</td>
                       <td>₱ {{ order.total_price }}</td>
-                      <td>{{ order.status }}</td>
                       <td>
-                        <v-btn icon color="red" @click="cancelOrder(order.order_id)">
-                          <v-icon>mdi-delete</v-icon>
+                        <v-chip
+                          :color="order.status === 'Received' ? 'green' : 'grey'"
+                          text-color="white"
+                          small
+                        >
+                          {{ order.status }}
+                        </v-chip>
+                      </td>
+                      <td>
+                        <v-btn icon size="x-small" color="red" @click="cancelOrder(order.order_id)">
+                          <v-icon size="16">mdi-delete</v-icon>
                         </v-btn>
                       </td>
                     </tr>
@@ -101,9 +110,8 @@ onMounted(() => {
                 </v-table>
               </v-tabs-window-item>
 
-              <!-- Bookings Tab -->
               <v-tabs-window-item value="bookings">
-                <v-table>
+                <v-table density="comfortable">
                   <thead>
                     <tr>
                       <th>Farm</th>
@@ -118,10 +126,18 @@ onMounted(() => {
                       <td>{{ booking.Farms?.farm_name }}</td>
                       <td>{{ booking.Farms?.location }}</td>
                       <td>{{ booking.booking_date }}</td>
-                      <td>{{ booking.status }}</td>
                       <td>
-                        <v-btn icon color="red" @click="cancelBooking(booking.booking_id)">
-                          <v-icon>mdi-delete</v-icon>
+                        <v-chip
+                          :color="booking.status === 'On Site' ? 'green' : 'grey'"
+                          text-color="white"
+                          small
+                        >
+                          {{ booking.status }}
+                        </v-chip>
+                      </td>
+                      <td>
+                        <v-btn icon size="x-small" color="red" @click="cancelBooking(booking.booking_id)">
+                          <v-icon size="16">mdi-delete</v-icon>
                         </v-btn>
                       </td>
                     </tr>
@@ -130,39 +146,54 @@ onMounted(() => {
               </v-tabs-window-item>
             </v-tabs-window>
           </v-card-text>
+
+          <v-divider class="mt-2" />
+          <div class="d-flex justify-start" style="position: absolute; bottom: 16px; left: 16px;">
+            <v-btn color="green" rounded class="text-white" to="/OBhistory">
+              View History
+            </v-btn>
+          </div>
         </v-card>
       </v-col>
     </v-row>
 
-    <!-- Order Dialog -->
     <v-dialog v-model="showOrderDialog" max-width="400">
       <v-card>
         <v-card-title>Edit Quantity</v-card-title>
         <v-card-text>
-          <v-text-field label="Quantity" type="number" v-model="selectedOrder.quantity" min="1" />
+          <v-text-field
+            label="Quantity"
+            type="number"
+            v-model="selectedOrder.quantity"
+            min="1"
+            density="compact"
+          />
         </v-card-text>
         <v-card-actions>
-          <v-btn text @click="showOrderDialog = false">Cancel</v-btn>
+          <v-spacer />
+          <v-btn variant="text" @click="showOrderDialog = false">Cancel</v-btn>
           <v-btn color="green" text @click="saveOrderChanges">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- Booking Dialog -->
     <v-dialog v-model="showBookingDialog" max-width="400">
       <v-card>
         <v-card-title>Reschedule Booking</v-card-title>
         <v-card-text>
-          <v-text-field label="New Booking Date" type="date" v-model="selectedBooking.booking_date" />
+          <v-text-field
+            label="New Booking Date"
+            type="date"
+            v-model="selectedBooking.booking_date"
+            density="compact"
+          />
         </v-card-text>
         <v-card-actions>
-          <v-btn text @click="showBookingDialog = false">Cancel</v-btn>
+          <v-spacer />
+          <v-btn variant="text" @click="showBookingDialog = false">Cancel</v-btn>
           <v-btn color="green" text @click="saveBookingChanges">Save</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
   </TravelerLayout>
 </template>
-
-<style scoped>
-</style>
