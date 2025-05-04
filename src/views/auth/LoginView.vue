@@ -15,22 +15,22 @@ const formDataDefault = {
   password: '',
 }
 
-const formData = ref({
-  ...formDataDefault,
-})
+const formData = ref({ ...formDataDefault })
 
 const router = useRouter()
 
-// This function is triggered on form submit
+// 👉 Dialog for user not found
+const showUserNotFoundDialog = ref(false)
+
+// 👉 Form submit handler
 const onFormSubmit = () => {
-  refVform.value?.validate().then(({ valid: isValid }) => {
-    if (isValid) onSubmit()
+  refVform.value?.validate().then(({ valid }) => {
+    if (valid) onSubmit()
   })
 }
 
-// This function handles the login process
+// 👉 Actual submit logic
 const onSubmit = async () => {
-  // Reset Form Action utils; Turn on processing at the same time
   formAction.value = { ...formActionDefault, formProcess: true }
 
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -39,36 +39,31 @@ const onSubmit = async () => {
   })
 
   if (error) {
-    // Handle the error message
-    formAction.value.formErrorMessage = error.message
-    formAction.value.formStatus = error.status
+    // If no user exists, show the dialog
+    if (error.message.includes('Invalid login credentials')) {
+      showUserNotFoundDialog.value = true
+    } else {
+      formAction.value.formErrorMessage = error.message
+      formAction.value.formStatus = error.status
+    }
   } else if (data) {
-    // Handle the success message
     formAction.value.formSuccessMessage = 'Successfully Logged Account.'
-
-    // Fetch user metadata (including role) from Supabase
     const user = data.user
     if (user) {
-      // Get role from user metadata
-      const role = user.user_metadata?.role  // Ensure role is stored in user_metadata
+      const role = user.user_metadata?.role
 
-      // Redirect based on the role
-      if (role === "farmer") {
-        router.replace('/list-farm')  // Redirect to farmer's page
-      } else if (role === "traveler") {
-        router.replace('/discoverfarm')  // Redirect to traveler's page
+      if (role === 'farmer') {
+        router.replace('/list-farm')
+      } else if (role === 'traveler') {
+        router.replace('/discoverfarm')
       } else {
-        console.log("Role not found or unrecognized.")
+        console.warn('Unrecognized role')
       }
     }
   }
 
-  // Reset Form
   refVform.value?.reset()
-  // Turn off processing
   formAction.value.formProcess = false
-
-  
 }
 </script>
 
@@ -83,9 +78,10 @@ const onSubmit = async () => {
             </v-card-title>
 
             <v-card-text>
-              <h2 class="text-center mb-6 font-weight-bold text-">Welcome to <span style="color: #f8bd01;">Agri</span><span style="color: #728d5a;">Vista!</span></h2>
+              <h2 class="text-center mb-6 font-weight-bold">
+                Welcome to <span style="color: #f8bd01;">Agri</span><span style="color: #728d5a;">Vista!</span>
+              </h2>
 
-              
               <v-form ref="refVform" @submit.prevent="onFormSubmit">
                 <v-text-field
                   label="Email"
@@ -95,7 +91,6 @@ const onSubmit = async () => {
                   :rules="[requiredValidator, emailValidator]"
                   v-model="formData.email"
                 />
-
                 <v-text-field
                   label="Password"
                   type="password"
@@ -130,6 +125,29 @@ const onSubmit = async () => {
           </v-card>
         </v-col>
       </v-row>
+
+      <!-- MODERN DIALOG -->
+      <v-dialog v-model="showUserNotFoundDialog" max-width="420" transition="dialog-bottom-transition">
+        <v-card class="pa-4 rounded-xl">
+          <v-card-title class="d-flex align-center">
+            <v-icon color="warning" class="me-2">mdi-alert-circle</v-icon>
+            <span class="text-h6 font-weight-medium">Account Not Found</span>
+          </v-card-title>
+
+          <v-card-text class="pt-2">
+            <p>We couldn't find an account with that email and password. Would you like to register?</p>
+          </v-card-text>
+
+          <v-card-actions class="justify-end pt-4">
+            <v-btn text @click="showUserNotFoundDialog = false">Cancel</v-btn>
+            <RouterLink to="/register-pick">
+              <v-btn color="success" class="text-white" @click="showUserNotFoundDialog = false">
+                Register Now
+              </v-btn>
+            </RouterLink>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
     </v-container>
   </v-app>
 </template>
@@ -177,4 +195,3 @@ const onSubmit = async () => {
   text-decoration: underline;
 }
 </style>
-
