@@ -1,6 +1,5 @@
 <template>
   <v-app>
-
     <v-app-bar app fixed color="white" elevate-on-scroll flat>
       <v-container>
         <v-row class="align-center">
@@ -9,18 +8,70 @@
           </v-col>
 
           <v-col class="d-none d-md-flex justify-end">
-            <v-btn text href="#hero-section" class="mx-2" style="font-size: 16px; padding: 10px 16px;">Home</v-btn>
-            <v-btn text href="#about-section" class="mx-2" style="font-size: 16px; padding: 10px 16px;">About Us</v-btn>
-            <v-btn text href="#explore-section" class="mx-2" style="font-size: 16px; padding: 10px 16px;">What We Offer</v-btn>
-            <v-btn text to="/login" class="mx-2" style="font-size: 16px; padding: 10px 16px;">Login</v-btn>
+            <v-btn 
+              text 
+              href="#hero-section" 
+              class="mx-2 nav-btn" 
+              :class="{'active-btn': activeLink === 'home'}" 
+              style="font-size: 16px; padding: 10px 16px;"
+              @click="setActiveLink('home')"
+            >Home</v-btn>
+
+            <v-btn 
+              text 
+              href="#about-section" 
+              class="mx-2 nav-btn" 
+              :class="{'active-btn': activeLink === 'about'}" 
+              style="font-size: 16px; padding: 10px 16px;"
+              @click="setActiveLink('about')"
+            >About Us</v-btn>
+
+            <v-btn 
+              text 
+              href="#explore-section" 
+              class="mx-2 nav-btn" 
+              :class="{'active-btn': activeLink === 'explore'}" 
+              style="font-size: 16px; padding: 10px 16px;"
+              @click="setActiveLink('explore')"
+            >What We Offer</v-btn>
+
+            <v-btn 
+              text 
+              to="/login" 
+              class="mx-2 nav-btn" 
+              style="font-size: 16px; padding: 10px 16px;"
+            >Login</v-btn>
+          </v-col>
+
+          <!-- Mobile Navigation Menu -->
+          <v-col class="d-flex d-md-none justify-end">
+            <v-btn icon @click="drawer = !drawer">
+              <v-icon>mdi-menu</v-icon>
+            </v-btn>
           </v-col>
         </v-row>
       </v-container>
     </v-app-bar>
 
+    <v-navigation-drawer v-model="drawer" app temporary>
+      <v-list>
+        <v-list-item>
+          <v-list-item-title><v-btn text href="#hero-section" @click="setActiveLink('home')">Home</v-btn></v-list-item-title>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-title><v-btn text href="#about-section" @click="setActiveLink('about')">About Us</v-btn></v-list-item-title>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-title><v-btn text href="#explore-section" @click="setActiveLink('explore')">What We Offer</v-btn></v-list-item-title>
+        </v-list-item>
+        <v-list-item>
+          <v-list-item-title><v-btn text to="/login">Login</v-btn></v-list-item-title>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
+
     <v-main>
       <v-container fluid class="pa-0">
-
         <div id="hero-section" class="hero-section d-flex flex-column justify-center align-center text-center white--text">
           <div class="move-up" style="padding-bottom:100px;">
             <h1 class="text-h4 text-md-h3 text-white font-weight-bold mb-9">
@@ -117,6 +168,8 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+
 const cards = [
   {
     title: 'Urban Farm Listings',
@@ -138,7 +191,37 @@ const cards = [
     image: '/images/444.jpg',
     description: 'Participate to help sustain urban farms and support local communities.'
   }
-]
+];
+
+let drawer = ref(false);
+const activeLink = ref('home');  
+
+const setActiveLink = (link) => {
+  activeLink.value = link;
+};
+
+const updateActiveLinkOnScroll = () => {
+  const sections = ['hero-section', 'about-section', 'explore-section'];
+  sections.forEach(sectionId => {
+    const section = document.getElementById(sectionId);
+    if (section && isInViewport(section)) {
+      activeLink.value = sectionId.split('-')[0];
+    }
+  });
+};
+
+const isInViewport = (element) => {
+  const rect = element.getBoundingClientRect();
+  return rect.top <= window.innerHeight && rect.bottom >= 0;
+};
+
+onMounted(() => {
+  window.addEventListener('scroll', updateActiveLinkOnScroll);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', updateActiveLinkOnScroll);
+});
 </script>
 
 <style scoped>
@@ -189,5 +272,25 @@ html {
   background-position: center;
   padding: 100px 0;
   font-size: 1.8rem;
+}
+
+.nav-btn {
+  transition: background-color 0.3s ease;
+}
+
+.active-btn {
+  background-color: green !important;
+  color: white !important;
+}
+
+@media (max-width: 600px) {
+  .hero-section, .about-section {
+    padding-top: 50px;
+  }
+}
+
+.v-btn:hover {
+  background-color: green !important;
+  color: white !important;
 }
 </style>
