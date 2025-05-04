@@ -6,10 +6,12 @@ import { getAvatarText } from '@/utils/helpers'
 import DashboardLayout from '@/components/DashboardLayout.vue'
 
 const router = useRouter()
-
 const formAction = ref({ ...formActionDefault })
 const isEditing = ref(false)
 const imageFile = ref(null)
+const imageUrl = ref('')
+const originalUserData = ref({})
+const originalAvatarUrl = ref('')
 
 const userData = ref({
   initials: '',
@@ -17,11 +19,9 @@ const userData = ref({
   full_name: '',
   role: '',
   address: '',
-  contanctNo: '',
+  contactNo: '',
   avatar_url: ''
 })
-
-const imageUrl = ref('')
 
 const getUser = async () => {
   const { data: { user } } = await supabase.auth.getUser()
@@ -31,18 +31,24 @@ const getUser = async () => {
     userData.value.full_name = user.user_metadata?.full_name || ''
     userData.value.role = user.user_metadata?.role || 'Farmer'
     userData.value.address = user.user_metadata?.address || ''
-    userData.value.contanctNo = user.user_metadata?.contanctNo || ''
+    userData.value.contactNo = user.user_metadata?.contactNo || ''
     userData.value.avatar_url = user.user_metadata?.avatar_url || ''
     userData.value.initials = getAvatarText(user.user_metadata?.full_name || user.email)
 
+    originalUserData.value = { ...userData.value }
     if (userData.value.avatar_url) {
       imageUrl.value = userData.value.avatar_url
+      originalAvatarUrl.value = userData.value.avatar_url
     }
   }
 }
 
 const handleFileChange = (e) => {
-  imageFile.value = e.target.files[0]
+  const file = e.target.files[0]
+  imageFile.value = file
+  if (file) {
+    imageUrl.value = URL.createObjectURL(file)
+  }
 }
 
 const uploadImage = async () => {
@@ -69,14 +75,15 @@ const uploadImage = async () => {
 
 const toggleEdit = async () => {
   if (isEditing.value) {
+    // Save
     const uploadedUrl = await uploadImage()
 
     const updatedUser = {
       full_name: userData.value.full_name,
       role: userData.value.role,
       address: userData.value.address,
-      contanctNo: userData.value.contanctNo,
-      ...(uploadedUrl && { avatar_url: uploadedUrl }),
+      contactNo: userData.value.contactNo,
+      ...(uploadedUrl && { avatar_url: uploadedUrl })
     }
 
     const { error } = await supabase.auth.updateUser({ data: updatedUser })
@@ -89,6 +96,11 @@ const toggleEdit = async () => {
       alert('Saved successfully!')
       await getUser()
     }
+  } else {
+    // Cancel: reset to original
+    userData.value = { ...originalUserData.value }
+    imageUrl.value = originalAvatarUrl.value
+    imageFile.value = null
   }
 
   isEditing.value = !isEditing.value
@@ -108,7 +120,13 @@ onMounted(() => {
         <v-card class="pa-6 rounded-xl" elevation="1" style="border: 1px solid #e5e5e5;">
           <div class="d-flex align-center mb-6">
             <v-avatar size="96" class="elevation-1" style="border: 3px solid #ccc;">
-              <img v-if="imageUrl" :src="imageUrl" alt="User Avatar" class="rounded-circle" style="width: 100%; height: 100%; object-fit: cover"/>
+              <img
+                v-if="imageUrl"
+                :src="imageUrl"
+                alt="User Avatar"
+                class="rounded-circle"
+                style="width: 100%; height: 100%; object-fit: cover"
+              />
               <span v-else class="white--text text-h5">{{ userData.initials }}</span>
             </v-avatar>
 
@@ -170,7 +188,7 @@ onMounted(() => {
             <v-col cols="12" md="6">
               <v-text-field
                 label="Contact No."
-                v-model="userData.contanctNo"
+                v-model="userData.contactNo"
                 :disabled="!isEditing"
                 variant="plain"
                 hide-details
@@ -201,7 +219,6 @@ onMounted(() => {
   padding-left: 0;
   border-bottom: 1px solid #ddd !important;
 }
-
 .modern-field label {
   color: #888;
 }
