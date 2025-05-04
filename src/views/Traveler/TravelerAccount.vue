@@ -6,7 +6,8 @@ import { getAvatarText } from '@/utils/helpers'
 
 const isEditing = ref(false)
 const imageFile = ref(null)
-const imageUrl = ref('') 
+const imageUrl = ref('')
+const originalAvatarUrl = ref('') // 🆕 to store original image for cancel
 
 const travelerData = ref({
   initials: '',
@@ -17,7 +18,7 @@ const travelerData = ref({
   date: '',
   location: '',
   avatar_url: '',
-  role: '', 
+  role: '',
 })
 
 const getTraveler = async () => {
@@ -35,12 +36,17 @@ const getTraveler = async () => {
 
     if (travelerData.value.avatar_url) {
       imageUrl.value = travelerData.value.avatar_url
+      originalAvatarUrl.value = travelerData.value.avatar_url // store original
     }
   }
 }
 
 const handleFileChange = (e) => {
-  imageFile.value = e.target.files[0]
+  const file = e.target.files[0]
+  imageFile.value = file
+  if (file) {
+    imageUrl.value = URL.createObjectURL(file) // Show preview immediately
+  }
 }
 
 const uploadImage = async () => {
@@ -67,6 +73,7 @@ const uploadImage = async () => {
 
 const toggleEdit = async () => {
   if (isEditing.value) {
+    // Save
     const uploadedImageUrl = await uploadImage()
     const updatedData = {
       full_name: travelerData.value.full_name,
@@ -84,6 +91,10 @@ const toggleEdit = async () => {
       alert('Traveler profile saved successfully!')
       await getTraveler()
     }
+  } else {
+    // Cancel edit: restore original image preview
+    imageUrl.value = originalAvatarUrl.value
+    imageFile.value = null
   }
 
   isEditing.value = !isEditing.value
@@ -108,13 +119,14 @@ onMounted(getTraveler)
                   alt="Avatar"
                   class="rounded-circle"
                   style="width: 100%; height: 100%; object-fit: cover"
-                  
                 />
                 <v-icon v-else size="64" color="grey">mdi-account</v-icon>
               </v-avatar>
 
               <div class="ms-4">
-                <div class="text-subtitle-1 font-weight-medium mb-2">{{ travelerData.full_name || 'Your Name' }}</div>
+                <div class="text-subtitle-1 font-weight-medium mb-2">
+                  {{ travelerData.full_name || 'Your Name' }}
+                </div>
                 <v-btn
                   v-if="isEditing"
                   variant="text"
