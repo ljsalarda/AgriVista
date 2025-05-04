@@ -6,9 +6,7 @@ import { useRouter } from 'vue-router'
 
 const refVform = ref()
 
-const formAction = ref({
-  ...formActionDefault,
-})
+const formAction = ref({ ...formActionDefault })
 
 const formDataDefault = {
   email: '',
@@ -19,19 +17,17 @@ const formData = ref({ ...formDataDefault })
 
 const router = useRouter()
 
-// 👉 Dialog for user not found
-const showUserNotFoundDialog = ref(false)
+const loginError = ref(false)
 
-// 👉 Form submit handler
 const onFormSubmit = () => {
   refVform.value?.validate().then(({ valid }) => {
     if (valid) onSubmit()
   })
 }
 
-// 👉 Actual submit logic
 const onSubmit = async () => {
   formAction.value = { ...formActionDefault, formProcess: true }
+  loginError.value = false
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email: formData.value.email,
@@ -39,26 +35,16 @@ const onSubmit = async () => {
   })
 
   if (error) {
-    // If no user exists, show the dialog
-    if (error.message.includes('Invalid login credentials')) {
-      showUserNotFoundDialog.value = true
-    } else {
-      formAction.value.formErrorMessage = error.message
-      formAction.value.formStatus = error.status
-    }
+    loginError.value = true
+    formAction.value.formErrorMessage = 'Wrong email or password.'
+    formAction.value.formStatus = error.status
   } else if (data) {
-    formAction.value.formSuccessMessage = 'Successfully Logged Account.'
+    formAction.value.formSuccessMessage = 'Successfully Logged In.'
     const user = data.user
     if (user) {
       const role = user.user_metadata?.role
-
-      if (role === 'farmer') {
-        router.replace('/list-farm')
-      } else if (role === 'traveler') {
-        router.replace('/discoverfarm')
-      } else {
-        console.warn('Unrecognized role')
-      }
+      if (role === 'farmer') router.replace('/list-farm')
+      else if (role === 'traveler') router.replace('/discoverfarm')
     }
   }
 
@@ -82,6 +68,18 @@ const onSubmit = async () => {
                 Welcome to <span style="color: #f8bd01;">Agri</span><span style="color: #728d5a;">Vista!</span>
               </h2>
 
+              <v-alert
+                v-if="loginError"
+                type="error"
+                class="mb-4"
+                border="start"
+                color="error"
+                variant="tonal"
+                elevation="1"
+              >
+                Wrong email or password.
+              </v-alert>
+
               <v-form ref="refVform" @submit.prevent="onFormSubmit">
                 <v-text-field
                   label="Email"
@@ -91,6 +89,7 @@ const onSubmit = async () => {
                   :rules="[requiredValidator, emailValidator]"
                   v-model="formData.email"
                 />
+
                 <v-text-field
                   label="Password"
                   type="password"
@@ -125,29 +124,6 @@ const onSubmit = async () => {
           </v-card>
         </v-col>
       </v-row>
-
-      <!-- MODERN DIALOG -->
-      <v-dialog v-model="showUserNotFoundDialog" max-width="420" transition="dialog-bottom-transition">
-        <v-card class="pa-4 rounded-xl">
-          <v-card-title class="d-flex align-center">
-            <v-icon color="warning" class="me-2">mdi-alert-circle</v-icon>
-            <span class="text-h6 font-weight-medium">Account Not Found</span>
-          </v-card-title>
-
-          <v-card-text class="pt-2">
-            <p>We couldn't find an account with that email and password. Would you like to register?</p>
-          </v-card-text>
-
-          <v-card-actions class="justify-end pt-4">
-            <v-btn text @click="showUserNotFoundDialog = false">Cancel</v-btn>
-            <RouterLink to="/register-pick">
-              <v-btn color="success" class="text-white" @click="showUserNotFoundDialog = false">
-                Register Now
-              </v-btn>
-            </RouterLink>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
     </v-container>
   </v-app>
 </template>

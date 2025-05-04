@@ -6,7 +6,7 @@ import { getAvatarText } from '@/utils/helpers'
 
 const isEditing = ref(false)
 const imageFile = ref(null)
-const imageUrl = ref('') // Add this to manage image URL
+const imageUrl = ref('') 
 
 const travelerData = ref({
   initials: '',
@@ -17,7 +17,7 @@ const travelerData = ref({
   date: '',
   location: '',
   avatar_url: '',
-  role: '', // Ensure role is added to travelerData
+  role: '', 
 })
 
 const getTraveler = async () => {
@@ -30,7 +30,7 @@ const getTraveler = async () => {
     travelerData.value.contactNo = user.user_metadata?.contactNo || ''
     travelerData.value.date = user.user_metadata?.date || ''
     travelerData.value.avatar_url = user.user_metadata?.avatar_url || ''
-    travelerData.value.role = user.user_metadata?.role || '' // Get role from metadata
+    travelerData.value.role = user.user_metadata?.role || ''
     travelerData.value.initials = getAvatarText(user.user_metadata?.full_name || user.email)
 
     if (travelerData.value.avatar_url) {
@@ -100,7 +100,6 @@ onMounted(getTraveler)
           <h2 class="text-h5 font-weight-bold mb-6 text-center">👤 Profile Settings</h2>
 
           <v-card class="pa-6 rounded-xl" elevation="1" style="border: 1px solid #e5e5e5;">
-            <!-- Avatar Section -->
             <div class="d-flex align-center mb-6">
               <v-avatar size="96" class="elevation-1" style="border: 3px solid #ccc;">
                 <img
@@ -135,7 +134,6 @@ onMounted(getTraveler)
               </div>
             </div>
 
-            <!-- Form Fields -->
             <v-divider class="mb-6"></v-divider>
             <v-row dense>
               <v-col cols="12" md="6">
@@ -193,7 +191,6 @@ onMounted(getTraveler)
               </v-col>
             </v-row>
 
-            <!-- Action -->
             <v-divider class="mt-6 mb-4"></v-divider>
             <div class="d-flex justify-end">
               <v-btn

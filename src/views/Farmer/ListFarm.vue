@@ -257,7 +257,6 @@ onMounted(() => {
           </div>
         </v-card>
 
-        <!-- Farm Cards Section -->
         <v-row class="mt-6" dense>
           <v-col
             v-for="(farm, index) in farms"
@@ -298,7 +297,6 @@ onMounted(() => {
       </v-col>
     </v-row>
 
-    <!-- Edit Farm Modal -->
     <v-dialog v-model="editDialog" max-width="600" transition="dialog-bottom-transition">
       <v-card class="elevation-8">
         <v-card-title class="text-h5">Edit Farm</v-card-title>
@@ -318,7 +316,6 @@ onMounted(() => {
       </v-card>
     </v-dialog>
 
-    <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000" top>
       {{ snackbar.message }}
     </v-snackbar>

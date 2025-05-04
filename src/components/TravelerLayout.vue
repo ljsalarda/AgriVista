@@ -62,20 +62,17 @@ onMounted(() => {
   getLoggedStatus()
 })
 
-// Highlight active path
 const isActive = (path) => computed(() => route.path === path)
 </script>
 
 
 <template>
   <v-app>
-    <!-- App Bar -->
     <v-app-bar app elevation="2" color="white" class="d-md-none">
       <v-app-bar-nav-icon @click="drawerOpen = !drawerOpen" />
       <v-toolbar-title class="font-weight-bold text-grey-darken-3">AgriVista</v-toolbar-title>
     </v-app-bar>
 
-    <!-- Mobile Drawer -->
     <v-navigation-drawer
       v-model="drawerOpen"
       temporary
@@ -136,10 +133,8 @@ const isActive = (path) => computed(() => route.path === path)
       </div>
     </v-navigation-drawer>
 
-    <!-- Main Layout -->
     <v-container fluid class="pa-0">
       <v-row no-gutters>
-        <!-- Sidebar for Desktop -->
         <v-col
           cols="3"
           class="d-none d-md-flex flex-column justify-space-between"
@@ -198,7 +193,6 @@ const isActive = (path) => computed(() => route.path === path)
           </div>
         </v-col>
 
-        <!-- Main Content -->
         <v-col cols="12" md="9">
           <v-main class="pa-0 mt-0 mt-md-0 mt-10">
             <v-container fluid>
@@ -209,7 +203,6 @@ const isActive = (path) => computed(() => route.path === path)
                 </div>
 
                 <div class="d-flex align-center">
-                  <!-- Settings Menu -->
                   <v-menu offset-y transition="scale-transition">
                     <template #activator="{ props }">
                       <v-btn class="mr-6" icon v-bind="props">
@@ -251,7 +244,6 @@ const isActive = (path) => computed(() => route.path === path)
                 </div>
               </div>
 
-              <!-- Slot Content -->
               <slot />
             </v-container>
           </v-main>

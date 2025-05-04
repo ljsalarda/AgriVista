@@ -140,7 +140,7 @@ async function saveEditProduct() {
       category: editingProduct.value.category,
       price: parseFloat(editingProduct.value.price),
       stock: editingProduct.value.stock,
-      product_images: imageUrls.length ? imageUrls : editingProduct.value.product_images // Use new images or keep old ones
+      product_images: imageUrls.length ? imageUrls : editingProduct.value.product_images 
     })
     .eq('product_id', editingProduct.value.product_id)
     .select()
@@ -245,7 +245,6 @@ onMounted(() => {
           </div>
         </v-card>
 
-        <!-- Product Cards Section -->
         <v-row class="mt-6" dense>
           <v-col
             v-for="(product, index) in products"
@@ -275,7 +274,6 @@ onMounted(() => {
       </v-col>
     </v-row>
 
-    <!-- Edit Product Modal -->
     <v-dialog v-model="editDialog" max-width="500">
       <v-card>
         <v-card-title>Edit Product</v-card-title>
@@ -300,7 +298,6 @@ onMounted(() => {
       </v-card>
     </v-dialog>
 
-    <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000">
       {{ snackbar.message }}
     </v-snackbar>

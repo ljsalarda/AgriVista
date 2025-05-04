@@ -97,8 +97,6 @@ onMounted(async () => {
         </v-col>
       </v-row>
     </v-container>
-
-    <!-- Order Modal -->
     <v-dialog v-model="dialog" max-width="500" transition="dialog-bottom-transition" persistent>
       <v-card class="rounded-xl elevation-10 pa-6" style="background: linear-gradient(to top, #ffffff, #f7f7f7)">
         <v-card-title class="text-h6 font-weight-bold d-flex align-center">

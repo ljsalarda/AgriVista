@@ -130,7 +130,6 @@ onMounted(() => {
 
           <v-card-text class="overflow-y-auto flex-grow-1 px-0">
             <v-tabs-window v-model="tab">
-              <!-- Orders Tab -->
               <v-tabs-window-item value="purchased">
                 <v-table density="comfortable">
                   <thead>
@@ -165,7 +164,6 @@ onMounted(() => {
                 </v-table>
               </v-tabs-window-item>
 
-              <!-- Bookings Tab -->
               <v-tabs-window-item value="bookings">
                 <v-table density="comfortable">
                   <thead>
@@ -202,7 +200,6 @@ onMounted(() => {
             </v-tabs-window>
           </v-card-text>
 
-          <!-- View History Button -->
           <v-divider class="mt-2" />
           <div class="d-flex justify-start" style="position: absolute; bottom: 16px; left: 16px;">
             <v-btn color="green" rounded class="text-white" to="/OBhistory">
@@ -213,7 +210,6 @@ onMounted(() => {
       </v-col>
     </v-row>
 
-    <!-- Order Dialog -->
     <v-dialog v-model="showOrderDialog" max-width="400">
       <v-card>
         <v-card-title>Edit Quantity</v-card-title>
@@ -234,7 +230,6 @@ onMounted(() => {
       </v-card>
     </v-dialog>
 
-    <!-- Booking Dialog -->
     <v-dialog v-model="showBookingDialog" max-width="400">
       <v-card>
         <v-card-title>Reschedule Booking</v-card-title>
