@@ -77,53 +77,52 @@ const onSubmit = async () => {
     <v-container fluid class="bg-container">
       <v-row justify="center" align="center" style="min-height: 100vh">
         <v-col cols="12" sm="8" md="6" lg="4">
-          <v-card class="elevation-12 login-card">
-            <v-card-title class="text-center pt-6">
-              <v-img src="/images/AgriVistaLogo.png" max-width="120" class="mx-auto"></v-img>
+          <v-card class="login-card elevation-10">
+            <v-card-title class="justify-center">
+              <v-img src="/images/AgriVistaLogo.png" max-width="120" class="my-4 mx-auto" />
             </v-card-title>
 
             <v-card-text>
-              <h2 class="text-center mb-4 font-weight-bold">Continue with</h2>
-              <div class="d-flex justify-center mb-4">
-                <v-btn icon="mdi-facebook" class="social-btn"></v-btn>
-                <v-btn icon="mdi-google" class="social-btn mx-2"></v-btn>
-                <v-btn icon="mdi-apple" class="social-btn"></v-btn>
-              </div>
-              <v-divider></v-divider>
-              <p class="text-center my-4">or</p>
+              <h2 class="text-center mb-6 font-weight-bold text-">Welcome to <span style="color: #f8bd01;">Agri</span><span style="color: #728d5a;">Vista!</span></h2>
+
+              
               <v-form ref="refVform" @submit.prevent="onFormSubmit">
                 <v-text-field
                   label="Email"
                   variant="outlined"
                   density="comfortable"
+                  color="success"
                   :rules="[requiredValidator, emailValidator]"
                   v-model="formData.email"
-                ></v-text-field>
+                />
+
                 <v-text-field
                   label="Password"
                   type="password"
                   variant="outlined"
                   density="comfortable"
+                  color="success"
                   :rules="[requiredValidator, passwordValidator]"
                   v-model="formData.password"
-                ></v-text-field>
+                />
+
                 <v-btn
                   type="submit"
                   block
-                  class="login-btn"
+                  class="login-btn mt-4"
                   color="success"
                   :disabled="formAction.formProcess"
                   :loading="formAction.formProcess"
+                  elevation="2"
                 >
-                  <template #default>
-                    Log In
-                  </template>
+                  <template #default>Log In</template>
                   <template #loading>
-                    <v-progress-circular indeterminate color="white" size="24"></v-progress-circular>
+                    <v-progress-circular indeterminate color="white" size="24" />
                   </template>
                 </v-btn>
               </v-form>
-              <p class="text-center mt-4">
+
+              <p class="text-center mt-6 text-body-2">
                 Don't have an account?
                 <RouterLink to="/register-pick" class="register-link">Register</RouterLink>
               </p>
@@ -140,33 +139,42 @@ const onSubmit = async () => {
   background: url('@/assets/bg2.jpg') no-repeat center center;
   background-size: cover;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .login-card {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  padding: 30px 24px;
+  transition: 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
-.social-btn {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: #f5f5f5;
+.login-card:hover {
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
 }
 
 .login-btn {
   border-radius: 25px;
-  font-weight: bold;
-  height: 45px;
+  font-weight: 600;
+  font-size: 16px;
+  height: 48px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.login-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(45, 125, 70, 0.3);
 }
 
 .register-link {
-  font-weight: bold;
+  font-weight: 600;
   color: #2d7d46;
   text-decoration: none;
 }
+
+.register-link:hover {
+  text-decoration: underline;
+}
 </style>
+
